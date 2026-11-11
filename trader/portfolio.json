@@ -1,0 +1,28 @@
+{
+  "cash": 3015.8900000000003,
+  "positions": [
+    {
+      "symbol": "TSLA",
+      "shares": 1,
+      "entry_price": 391.257248,
+      "current_price": 388.185,
+      "stop_price": 383.43,
+      "target_price": 399.08,
+      "pnl_usd": -3.072248000000002,
+      "pnl_pct": -0.7852245589581974,
+      "time": "Active"
+    },
+    {
+      "symbol": "UUP",
+      "shares": 238,
+      "entry_price": 29.345,
+      "current_price": 29.345,
+      "stop_price": 29.19,
+      "target_price": 29.75,
+      "pnl_usd": 0.0,
+      "pnl_pct": 0.0,
+      "time": "16:50:02"
+    }
+  ],
+  "updated_at": "2026-11-11T16:50:02.476787"
+}

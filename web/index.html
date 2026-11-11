@@ -264,6 +264,14 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 9.5-7 11-3.5-1.5-7-6-7-11V6l7-4z"/></svg>
         Pelosi Tracker
       </button>
+      <button class="tab-btn" data-tab="strategy" onclick="switchTab('strategy')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        ⚡ Scalping &amp; 1m Setups
+      </button>
+      <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0 1.51-1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings &amp; Risk Rules
+      </button>
       <button class="tab-btn" data-tab="logs" onclick="switchTab('logs')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
         24/7 Console Logs
@@ -283,9 +291,25 @@
             </div>
             <div class="panel-tools">
               <form class="add-symbol-form" onsubmit="addSymbolFromInput(event)">
-                <input type="text" id="input-symbol" placeholder="Add Ticker (e.g. QQQ)" maxlength="6">
+                <input type="text" id="input-symbol" placeholder="Add Ticker (e.g. QQQ, EURUSD)" maxlength="10">
                 <button type="submit" class="btn btn-secondary btn-sm">+ Add</button>
               </form>
+            </div>
+          </div>
+
+          <!-- Quick Watchlist Preset Category Switcher -->
+          <div class="watchlist-filter-bar">
+            <span class="filter-label">Quick Watchlist Presets:</span>
+            <div class="preset-btn-group">
+              <button type="button" class="btn-preset active" id="btn-wl-equities" onclick="loadWatchlistPreset('equities')">
+                📈 US Equities (Mega-Cap)
+              </button>
+              <button type="button" class="btn-preset" id="btn-wl-forex" onclick="loadWatchlistPreset('forex')">
+                💱 Forex &amp; Currencies (EUR/USD, GBP/USD, USD/JPY, UUP, FXE, GLD)
+              </button>
+              <button type="button" class="btn-preset" id="btn-wl-all" onclick="loadWatchlistPreset('all')">
+                🌐 All Assets (Equities + Forex)
+              </button>
             </div>
           </div>
 
@@ -462,6 +486,17 @@
               <div class="ticket-note" id="ticket-why">
                 Opening-range breakout on TSLA: 8 shares, bound by your $50 max loss per trade (8 x $5.86 = $46.88).
               </div>
+
+              <div class="ticket-action-bar">
+                <button class="btn btn-execute" id="btn-execute-order" onclick="executeCurrentOrder()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  🚀 Execute Order (Real-Time)
+                </button>
+                <button class="btn btn-flatten" id="btn-flatten-positions" onclick="emergencyFlatten()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                  🚨 Panic Flatten All
+                </button>
+              </div>
             </div>
           </div>
 
@@ -532,6 +567,75 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Real-Time Positions & Live P&L Table -->
+        <div class="panel-card" style="margin-top: 20px;">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h3>Live Open Positions &amp; Real-Time P&amp;L</h3>
+              <p class="panel-desc">Real-time fill tracker and bracket monitoring for open day trades (Alpaca / Paper Simulator).</p>
+            </div>
+            <div class="broker-status-pill" id="broker-status-pill">Connected: Alpaca Paper / Simulator</div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="positions-table">
+              <thead>
+                <tr>
+                  <th>Symbol</th>
+                  <th>Shares</th>
+                  <th>Entry Price</th>
+                  <th>Current Price</th>
+                  <th>Stop Price</th>
+                  <th>Target Price</th>
+                  <th>Unrealized P&amp;L ($)</th>
+                  <th>P&amp;L (%)</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="positions-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Real-Time Transactions & Executed Orders Table -->
+        <div class="panel-card" style="margin-top: 20px;">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h3>Real-Time Transactions &amp; Executed Orders</h3>
+              <p class="panel-desc">Live audit trail of all orders placed via Alpaca REST API and High-Fidelity Paper Simulator.</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="syncTransactionsNow()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+              Refresh Transactions
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="transactions-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Time</th>
+                  <th>Symbol</th>
+                  <th>Side</th>
+                  <th>Shares</th>
+                  <th>Type</th>
+                  <th>Stop Price</th>
+                  <th>Target Price</th>
+                  <th>Status</th>
+                  <th>Platform</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="transactions-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -643,7 +747,328 @@
         </div>
       </div>
 
-      <!-- TAB 7: 24/7 LOGS & CONSOLE -->
+      <!-- TAB 7: STRATEGY & SCALPING (1M FAST CANDLES & FOREX) -->
+      <div class="tab-pane" id="pane-strategy">
+        <div class="strategy-grid-3">
+          <!-- 1m Fast Scalping Setup -->
+          <div class="panel-card strategy-card active-strategy" id="strat-fast-1m">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="strategy-badge badge-fast">⚡ Ultra-Fast Momentum</div>
+                <h3>1-Minute Fast Scalp (Fast Earnings / Micro-ORB)</h3>
+                <p class="panel-desc">Optimized for high-volatility market open (9:30 - 10:00 AM) and fast earnings movers.</p>
+              </div>
+              <span class="status-badge status-triggered" id="badge-strat-1m">ACTIVE SETUP</span>
+            </div>
+
+            <div class="strategy-specs-grid">
+              <div class="spec-item">
+                <span class="spec-label">Candle Interval</span>
+                <span class="spec-val text-cyan">1-Minute Bars</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Opening Range</span>
+                <span class="spec-val">5 Minutes (09:30 - 09:35 ET)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Entry Window Opens</span>
+                <span class="spec-val text-emerald">09:35 AM ET (Immediate)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Volume Spike Filter</span>
+                <span class="spec-val">1.5x Range Average</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Target Multiplier</span>
+                <span class="spec-val">1.0R Quick Profit</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Expected Trade Duration</span>
+                <span class="spec-val text-amber">5 to 15 Minutes</span>
+              </div>
+            </div>
+
+            <div class="strategy-explanation">
+              <strong>How it works:</strong> Captures the morning momentum break within the first 5 minutes. As soon as a 1-minute bar closes above the 5-minute high with 1.5x volume, an immediate bracket entry is fired with tight stop at the 5-minute midpoint and swift 1R take-profit limit.
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <button class="btn btn-primary btn-block" onclick="activateStrategyPreset('fast_1m')">
+                ⚡ Stage 1m Fast Scalp Order Ticket
+              </button>
+              <button class="btn btn-execute btn-block" onclick="executeOneMinuteScalpNow()">
+                🚀 Submit 1m Transaction to Broker Now
+              </button>
+            </div>
+          </div>
+
+          <!-- Forex & Money Currency Trading Setup -->
+          <div class="panel-card strategy-card" id="strat-forex-pip">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="strategy-badge badge-forex">💱 24/5 Currency Scalp</div>
+                <h3>Forex &amp; Currencies Pip Scalp (EUR/USD, GBP/USD, USD/JPY, UUP)</h3>
+                <p class="panel-desc">24 Hours / 5 Days continuous global currency trading with tight 20-pip stops and 35-pip targets.</p>
+              </div>
+              <span class="status-badge" id="badge-strat-forex">AVAILABLE</span>
+            </div>
+
+            <div class="strategy-specs-grid">
+              <div class="spec-item">
+                <span class="spec-label">Market Session</span>
+                <span class="spec-val text-emerald">24/5 Continuous Trading</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Asset Class</span>
+                <span class="spec-val text-cyan">Spot FX &amp; Currency ETFs</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Candle Interval</span>
+                <span class="spec-val">1-Minute / 5-Minute Bars</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Pip Stop Loss</span>
+                <span class="spec-val text-rose">20 Pips ($0.0020)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Take-Profit Target</span>
+                <span class="spec-val text-emerald">35 Pips (1.75R Ratio)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Peak Volume Window</span>
+                <span class="spec-val text-amber">London/NY Overlap (08:00 - 12:00 ET)</span>
+              </div>
+            </div>
+
+            <div class="strategy-explanation">
+              <strong>How it works:</strong> Executes momentum breakouts on major world currencies (EUR/USD, GBP/USD, USD/JPY) and US Dollar index currency ETFs (UUP, FXE). Features 24/5 continuous execution, automated pip risk-budget sizing, and instant bracket order generation.
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <button class="btn btn-primary btn-block" onclick="activateStrategyPreset('forex_pip')">
+                💱 Stage Forex Scalp Order Ticket
+              </button>
+              <button class="btn btn-execute btn-block" onclick="executeForexScalpNow()">
+                🚀 Submit Forex Transaction to Broker Now
+              </button>
+            </div>
+          </div>
+
+          <!-- 5m Standard Setup -->
+          <div class="panel-card strategy-card" id="strat-standard-5m">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="strategy-badge badge-standard">📊 Standard Day Trade</div>
+                <h3>5-Minute Standard Opening Range Breakout</h3>
+                <p class="panel-desc">Conservative setup filtering out early-morning chop with 15-minute range.</p>
+              </div>
+              <span class="status-badge" id="badge-strat-5m">AVAILABLE</span>
+            </div>
+
+            <div class="strategy-specs-grid">
+              <div class="spec-item">
+                <span class="spec-label">Candle Interval</span>
+                <span class="spec-val">5-Minute Bars</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Opening Range</span>
+                <span class="spec-val">15 Minutes (09:30 - 09:45 ET)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Entry Window Opens</span>
+                <span class="spec-val text-blue">09:45 AM ET</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Volume Spike Filter</span>
+                <span class="spec-val">1.0x Range Average</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Target Multiplier</span>
+                <span class="spec-val">1.0R to 2.0R Target</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Expected Trade Duration</span>
+                <span class="spec-val">30 to 90 Minutes</span>
+              </div>
+            </div>
+
+            <div class="strategy-explanation">
+              <strong>How it works:</strong> The classic Reel day-trading rule. Waits for the full 15-minute opening range to establish before evaluating breakout closes on 5-minute bars. Higher win rate on trend days, lower transaction frequency.
+            </div>
+
+            <button class="btn btn-secondary btn-block" onclick="activateStrategyPreset('standard_5m')">
+              📊 Activate 5m Standard Strategy
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 8: SETTINGS & RISK RULES -->
+      <div class="tab-pane" id="pane-settings">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h3>Trading Rules, Budget &amp; Real-Time Broker Settings</h3>
+              <p class="panel-desc">Configure your personal daily trade limits, capital allocation, risk rules, and broker API integration in real time.</p>
+            </div>
+            <button class="btn btn-primary" onclick="saveSettingsForm(event)">
+              💾 Save Settings &amp; Apply
+            </button>
+          </div>
+
+          <form id="settings-form" onsubmit="saveSettingsForm(event)">
+            <div class="settings-grid">
+              <!-- Section 1: Daily Limits -->
+              <div class="settings-section">
+                <div class="settings-section-title">📊 Daily Trade &amp; Risk Limits</div>
+
+                <div class="form-group">
+                  <label for="cfg-max-trades">Max Trades Per Day</label>
+                  <input type="number" id="cfg-max-trades" min="1" max="50" step="1" required>
+                  <span class="form-hint">Maximum number of executed round-trip day trades allowed per session.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-max-orders">Max Orders Per Day</label>
+                  <input type="number" id="cfg-max-orders" min="1" max="100" step="1" required>
+                  <span class="form-hint">Hard ceiling on total submitted orders (including bracket legs).</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-budget">Total Account Budget ($)</label>
+                  <input type="number" id="cfg-budget" min="100" step="100" required>
+                  <span class="form-hint">Trading equity for position sizing and cash buffer math.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-max-loss-trade">Max Loss Per Trade ($)</label>
+                  <input type="number" id="cfg-max-loss-trade" min="5" step="5" required>
+                  <span class="form-hint">Dollar loss at the stop price. Sizer calculates shares: max_loss / risk_per_share.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-max-loss-day">Max Daily Loss Ceiling ($)</label>
+                  <input type="number" id="cfg-max-loss-day" min="10" step="10" required>
+                  <span class="form-hint">Cumulative daily loss threshold where trading stops immediately.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-min-rr">Minimum Reward:Risk Ratio</label>
+                  <input type="number" id="cfg-min-rr" min="0.5" max="10" step="0.1" required>
+                  <span class="form-hint">Target profit divided by stop loss risk (e.g. 1.0 or 1.5).</span>
+                </div>
+              </div>
+
+              <!-- Section 2: Strategy & Time Windows -->
+              <div class="settings-section">
+                <div class="settings-section-title">⏱️ Strategy Timeframe &amp; Cutoffs</div>
+
+                <div class="form-group">
+                  <label for="cfg-strategy-preset">Active Strategy Preset</label>
+                  <select id="cfg-strategy-preset" onchange="activateStrategyPreset(this.value)">
+                    <option value="fast_1m">⚡ 1-Minute Fast Scalp (Fast Earnings / Micro-ORB)</option>
+                    <option value="forex_pip">💱 Forex &amp; Currencies 24/5 Pip Scalp (20-Pip Stop, 1.75R)</option>
+                    <option value="standard_5m">📊 5-Minute Standard Day Trade (15m Range, 09:45 Open)</option>
+                  </select>
+                  <span class="form-hint">Switches risk rules, intervals, and order tickets.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-candle-interval">Candle Confirmation Interval</label>
+                  <select id="cfg-candle-interval">
+                    <option value="1m">1-Minute Candles (Fast Scalping / Fast Earnings)</option>
+                    <option value="5m">5-Minute Candles (Standard Day Trading)</option>
+                  </select>
+                  <span class="form-hint">Timeframe of completed confirmation candles.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-or-minutes">Opening Range Window (Minutes)</label>
+                  <select id="cfg-or-minutes">
+                    <option value="5">5 Minutes (09:30 - 09:35 ET) - Micro ORB</option>
+                    <option value="15">15 Minutes (09:30 - 09:45 ET) - Standard ORB</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-volume-mult">Minimum Trigger Volume Spike</label>
+                  <select id="cfg-volume-mult">
+                    <option value="1.0">1.0x Average Range Volume</option>
+                    <option value="1.2">1.2x Average Range Volume</option>
+                    <option value="1.5">1.5x Average Range Volume (Recommended for Fast Scalps)</option>
+                    <option value="2.0">2.0x Heavy Volume Surge</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-entries-before">No Entries Before (ET Time)</label>
+                  <input type="text" id="cfg-entries-before" placeholder="09:35" pattern="[0-2][0-9]:[0-5][0-9]">
+                  <span class="form-hint">Prevents early false breakouts. Use 09:35 for 1m scalp, 09:45 for 5m.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-entries-after">No Entries After (ET Time)</label>
+                  <input type="text" id="cfg-entries-after" placeholder="15:30" pattern="[0-2][0-9]:[0-5][0-9]">
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-flat-by">Daily Flatten Bell (ET Time)</label>
+                  <input type="text" id="cfg-flat-by" placeholder="15:55" pattern="[0-2][0-9]:[0-5][0-9]">
+                  <span class="form-hint">Closes open intraday positions before market close.</span>
+                </div>
+              </div>
+
+              <!-- Section 3: Broker Integration -->
+              <div class="settings-section">
+                <div class="settings-section-title">🔌 Real-Time Broker Integration</div>
+
+                <div class="form-group">
+                  <label for="cfg-paper-toggle">Trading Mode</label>
+                  <select id="cfg-paper-toggle">
+                    <option value="true">Paper Trading (Safe Simulation &amp; Paper API)</option>
+                    <option value="false">Live Real-Money Trading (Requires Confirmed Credentials)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-alpaca-key">Alpaca API Key ID</label>
+                  <input type="text" id="cfg-alpaca-key" placeholder="PK... (Alpaca Key)">
+                  <span class="form-hint">From your Alpaca paper or live dashboard. Stored locally in trader/config.json.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-alpaca-secret">Alpaca Secret Key</label>
+                  <input type="password" id="cfg-alpaca-secret" placeholder="••••••••••••••••••••••••">
+                  <span class="form-hint">Used to sign real-time order requests to Alpaca.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-pdt-guard">Pattern Day Trader (PDT) Guard</label>
+                  <select id="cfg-pdt-guard">
+                    <option value="false">Off (FINRA Notice 26-10 / Cash Account)</option>
+                    <option value="true">On (Enforce 3 day-trades per 5 rolling days)</option>
+                  </select>
+                </div>
+
+                <div class="broker-test-box">
+                  <button type="button" class="btn btn-secondary btn-block" onclick="testBrokerConnection()">
+                    ⚡ Test Broker Connection
+                  </button>
+                  <div class="broker-test-result" id="broker-test-result"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-actions">
+              <button type="submit" class="btn btn-primary btn-lg">
+                💾 Save Settings &amp; Update Rules
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- TAB 9: 24/7 LOGS & CONSOLE -->
       <div class="tab-pane" id="pane-logs">
         <div class="panel-card">
           <div class="panel-header">

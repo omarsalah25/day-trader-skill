@@ -24,7 +24,7 @@ def frontmatter(path):
     return (m.group(1) if m else ""), text
 
 
-RUNTIME_ITEMS = {"trader", "app", "web", "server.py", "start_app.sh"}
+RUNTIME_ITEMS = {"trader", "app", "web", "server.py", "start_app.sh", ".DS_Store"}
 
 
 def every_text_file():

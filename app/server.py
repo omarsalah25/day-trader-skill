@@ -27,6 +27,11 @@ class TraderHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=WEB_DIR, **kwargs)
 
+    def address_string(self):
+        # Avoid reverse DNS resolution lag on macOS
+        return self.client_address[0]
+
+
     def do_GET(self):
         url = urllib.parse.urlparse(self.path)
         path = url.path
@@ -76,6 +81,14 @@ class TraderHandler(SimpleHTTPRequestHandler):
             self._send_json(200, {"plan": engine.active_plan, "timemachine": engine.timemachine_stats})
         elif path == "/api/orders":
             self._send_json(200, {"orders": engine.orders, "risk": engine.risk_verdict})
+        elif path == "/api/config":
+            self._send_json(200, {"config": engine.get_config()})
+        elif path == "/api/broker/positions":
+            self._send_json(200, {"positions": engine.positions})
+        elif path == "/api/broker/transactions":
+            self._send_json(200, {"transactions": engine.transactions})
+        elif path == "/api/broker/account":
+            self._send_json(200, {"account": engine.broker_account})
         else:
             self.send_error(404, "API endpoint not found")
 
@@ -115,6 +128,11 @@ class TraderHandler(SimpleHTTPRequestHandler):
             success = engine.remove_symbol(sym)
             self._send_json(200, {"success": success, "watchlist": engine.watchlist})
 
+        elif path == "/api/watchlist/preset":
+            cat = data.get("category", "forex")
+            syms = engine.load_watchlist_preset(cat)
+            self._send_json(200, {"success": True, "category": cat, "watchlist": syms})
+
         elif path == "/api/alerts/add":
             alert = engine.add_alert(data)
             self._send_json(200, {"success": True, "alert": alert})
@@ -123,6 +141,43 @@ class TraderHandler(SimpleHTTPRequestHandler):
             alert_id = data.get("id", "")
             engine.dismiss_alert(alert_id)
             self._send_json(200, {"success": True})
+
+        elif path == "/api/config":
+            ok = engine.update_config(data)
+            self._send_json(200, {"success": ok, "config": engine.get_config()})
+
+        elif path == "/api/strategy":
+            preset = data.get("preset", "fast_1m")
+            engine.set_strategy_preset(preset)
+            self._send_json(200, {"success": True, "config": engine.get_config()})
+
+        elif path == "/api/broker/execute":
+            res = engine.execute_order(data.get("order"))
+            self._send_json(200, res)
+
+        elif path == "/api/broker/sync":
+            engine.sync_broker()
+            self._send_json(200, {
+                "success": True,
+                "positions": engine.positions,
+                "transactions": engine.transactions,
+                "account": engine.broker_account
+            })
+
+        elif path == "/api/broker/order/cancel":
+            order_id = data.get("order_id", "")
+            res = engine.cancel_order(order_id)
+            self._send_json(200, res)
+
+        elif path == "/api/strategy/generate":
+            preset = data.get("preset", "fast_1m")
+            sym = data.get("symbol", "TSLA")
+            orders_doc = engine.generate_strategy_order(preset, sym)
+            self._send_json(200, {"success": True, "orders": orders_doc})
+
+        elif path == "/api/broker/flatten":
+            res = engine.flatten_positions()
+            self._send_json(200, res)
 
         elif path == "/api/logs/clear":
             with engine.lock:
