@@ -1,0 +1,174 @@
+#!/usr/bin/env python3
+"""HTTP API Server & Static Asset Server for the 24/7 Day Trader Web App.
+Runs on standard Python library only.
+"""
+
+import argparse
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+import json
+import os
+from socketserver import ThreadingMixIn
+import sys
+import urllib.parse
+
+from engine import TradingEngine
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+WEB_DIR = os.path.join(ROOT, "web")
+
+engine = TradingEngine()
+
+
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+
+
+class TraderHandler(SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=WEB_DIR, **kwargs)
+
+    def do_GET(self):
+        url = urllib.parse.urlparse(self.path)
+        path = url.path
+
+        if path == "/favicon.ico":
+            self.send_response(204)
+            self.end_headers()
+        elif path.startswith("/api/"):
+            self.handle_api_get(path)
+        else:
+            if path in ("", "/"):
+                self.path = "/index.html"
+            super().do_GET()
+
+    def do_POST(self):
+        url = urllib.parse.urlparse(self.path)
+        path = url.path
+
+        content_length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(content_length) if content_length > 0 else b"{}"
+
+        try:
+            data = json.loads(body.decode("utf-8")) if body else {}
+        except Exception:
+            data = {}
+
+        if path.startswith("/api/"):
+            self.handle_api_post(path, data)
+        else:
+            self.send_error(404, "Not Found")
+
+    def handle_api_get(self, path):
+        if path == "/api/status" or path == "/api/state":
+            state = engine.get_state()
+            self._send_json(200, state)
+        elif path == "/api/logs":
+            self._send_json(200, {"logs": engine.logs})
+        elif path == "/api/watchlist":
+            self._send_json(200, {"watchlist": engine.watchlist, "quotes": engine.quotes})
+        elif path == "/api/alerts":
+            self._send_json(200, {"alerts": engine.alerts, "triggered": engine.triggered_alerts})
+        elif path == "/api/news":
+            self._send_json(200, {"news": engine.news_feed})
+        elif path == "/api/pelosi":
+            self._send_json(200, {"pelosi": engine.pelosi_filings})
+        elif path == "/api/plan":
+            self._send_json(200, {"plan": engine.active_plan, "timemachine": engine.timemachine_stats})
+        elif path == "/api/orders":
+            self._send_json(200, {"orders": engine.orders, "risk": engine.risk_verdict})
+        else:
+            self.send_error(404, "API endpoint not found")
+
+    def handle_api_post(self, path, data):
+        if path == "/api/engine/toggle":
+            if engine.running:
+                engine.pause()
+            else:
+                engine.resume()
+            self._send_json(200, {"running": engine.running})
+
+        elif path == "/api/engine/mode":
+            mode = data.get("mode", "simulation")
+            engine.set_mode(mode)
+            self._send_json(200, {"mode": engine.mode})
+
+        elif path == "/api/engine/interval":
+            interval = data.get("interval", 30)
+            engine.set_interval(interval)
+            self._send_json(200, {"interval": engine.interval})
+
+        elif path == "/api/engine/run-now":
+            engine.run_cycle_now()
+            self._send_json(200, {"message": "Cycle triggered immediately"})
+
+        elif path == "/api/engine/replay-demo":
+            engine.run_demo_reel()
+            self._send_json(200, {"message": "Full 9-step demo reel started"})
+
+        elif path == "/api/watchlist/add":
+            sym = data.get("symbol", "")
+            success = engine.add_symbol(sym)
+            self._send_json(200, {"success": success, "watchlist": engine.watchlist})
+
+        elif path == "/api/watchlist/remove":
+            sym = data.get("symbol", "")
+            success = engine.remove_symbol(sym)
+            self._send_json(200, {"success": success, "watchlist": engine.watchlist})
+
+        elif path == "/api/alerts/add":
+            alert = engine.add_alert(data)
+            self._send_json(200, {"success": True, "alert": alert})
+
+        elif path == "/api/alerts/dismiss":
+            alert_id = data.get("id", "")
+            engine.dismiss_alert(alert_id)
+            self._send_json(200, {"success": True})
+
+        elif path == "/api/logs/clear":
+            with engine.lock:
+                engine.logs.clear()
+            self._send_json(200, {"success": True})
+
+        else:
+            self.send_error(404, "API endpoint not found")
+
+    def _send_json(self, status_code, data):
+        payload = json.dumps(data).encode("utf-8")
+        self.send_response(status_code)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(payload)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.end_headers()
+        self.wfile.write(payload)
+
+    def log_message(self, format, *args):
+        # Mute standard noisy HTTP access logs so terminal logs stay clean
+        pass
+
+
+def run_server(port=8080):
+    server_address = ("0.0.0.0", port)
+    httpd = ThreadedHTTPServer(server_address, TraderHandler)
+    print(f"==================================================")
+    print(f"  Day Trader 24/7 Engine & Dashboard Active")
+    print(f"  Local URL:   http://localhost:{port}")
+    print(f"  Network URL: http://0.0.0.0:{port}")
+    print(f"==================================================")
+
+    # Start the continuous 24/7 engine in background thread
+    engine.start()
+
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\nShutting down 24/7 server...")
+        engine.pause()
+        httpd.server_close()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="24/7 Day Trader Web Application")
+    parser.add_argument("--port", type=int, default=8080, help="Port to serve on (default: 8080)")
+    args = parser.parse_args()
+    run_server(args.port)

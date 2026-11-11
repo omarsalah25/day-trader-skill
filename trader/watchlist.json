@@ -1,0 +1,27 @@
+{
+  "created_by": "trader-scanner",
+  "created_at": "2026-11-11T13:00:58Z",
+  "mode": "daily",
+  "as_of": "2026-11-10 close",
+  "universe": 5,
+  "scanned": 5,
+  "failed": 0,
+  "source": "yahoo",
+  "filters": {
+    "min_price": 5.0,
+    "min_volume": 1000000
+  },
+  "note": "A scan is a list of charts that match a rule, not a list of stocks to buy.",
+  "hits": [
+    {
+      "symbol": "NVDA",
+      "setups": [
+        "oversold"
+      ],
+      "price": 168.89,
+      "close_date": "2026-11-10",
+      "rsi": 23.9,
+      "volume": 427096957
+    }
+  ]
+}

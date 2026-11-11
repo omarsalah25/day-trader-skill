@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day Trader 24/7 | Autonomous Market Intelligence & Trading Engine</title>
+  <meta name="description" content="Autonomous 24/7 Day Trader engine and dashboard for chart scanning, news monitoring, bar-by-bar entry timing, Monte Carlo time machine simulations, risk management, and alerts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'><polyline points='22 7 13.5 15.5 8.5 10.5 2 17'/></svg>">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <!-- Sound Audio Tone Synth for Live Triggers (Web Audio API) -->
+  
+  <div class="app-layout">
+    <!-- Top Navigation & Control Bar -->
+    <header class="top-header" id="top-header">
+      <div class="header-left">
+        <div class="brand">
+          <div class="brand-logo">
+            <span class="pulse-ring"></span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+              <polyline points="16 7 22 7 22 13"></polyline>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <div class="brand-title">DAY TRADER <span class="badge-247">24 / 7</span></div>
+            <div class="brand-subtitle">Autonomous Market Intelligence &amp; Execution Pipeline</div>
+          </div>
+        </div>
+
+        <div class="clock-display" id="clock-display">
+          <div class="clock-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="clock-info">
+            <div class="clock-time" id="ny-time-display">--:--:-- ET</div>
+            <div class="clock-session">
+              <span class="session-dot" id="session-dot"></span>
+              <span id="session-text">CHECKING NYSE...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Mode Switcher -->
+        <div class="segmented-control" id="mode-selector">
+          <button class="seg-btn active" id="btn-mode-sim" onclick="setEngineMode('simulation')">
+            <span class="mode-icon">🧪</span> Simulation Mode
+          </button>
+          <button class="seg-btn" id="btn-mode-live" onclick="setEngineMode('live')">
+            <span class="mode-icon">⚡</span> Live Market
+          </button>
+        </div>
+
+        <!-- Interval Selector -->
+        <div class="interval-picker">
+          <label for="interval-select">Cycle:</label>
+          <select id="interval-select" onchange="setCycleInterval(this.value)">
+            <option value="15">15s</option>
+            <option value="30" selected>30s</option>
+            <option value="60">60s</option>
+            <option value="120">2m</option>
+          </select>
+        </div>
+
+        <!-- Engine Toggle -->
+        <button class="btn btn-engine-state btn-running" id="btn-toggle-engine" onclick="toggleEngine()">
+          <span class="btn-pulse"></span>
+          <span id="engine-toggle-text">PAUSE 24/7</span>
+        </button>
+
+        <!-- Immediate Trigger -->
+        <button class="btn btn-secondary" id="btn-run-cycle" onclick="runCycleNow()" title="Trigger next cycle immediately">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+          Run Now
+        </button>
+
+        <!-- Full Reel Demo Simulator -->
+        <button class="btn btn-primary" id="btn-demo-reel" onclick="runDemoReel()" title="Replays the full 9-step TSLA October 19 simulation">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          Replay Reel Demo
+        </button>
+      </div>
+    </header>
+
+    <!-- KPI Metric Summary Bar -->
+    <section class="kpi-banner">
+      <div class="kpi-card">
+        <div class="kpi-label">24/7 Engine Status</div>
+        <div class="kpi-value-row">
+          <span class="kpi-status-indicator active" id="kpi-engine-dot"></span>
+          <span class="kpi-value" id="kpi-engine-state">ACTIVE</span>
+        </div>
+        <div class="kpi-sub" id="kpi-uptime">Uptime: 00h 00m 00s</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Cycle Countdown</div>
+        <div class="kpi-value-row">
+          <span class="kpi-value highlight" id="kpi-countdown">--s</span>
+        </div>
+        <div class="kpi-sub" id="kpi-cycles">Total Cycles: 0</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Account Capital &amp; Risk</div>
+        <div class="kpi-value-row">
+          <span class="kpi-value text-emerald">$5,000.00</span>
+          <span class="kpi-tag">Paper</span>
+        </div>
+        <div class="kpi-sub">Max Risk/Trade: <strong>$50.00</strong> (1%)</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Watchlist Radar</div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kpi-watchlist-count">9</span>
+          <span class="kpi-tag tag-blue" id="kpi-triggered-count">1 Triggered</span>
+        </div>
+        <div class="kpi-sub">5m Opening Range Breakouts</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Active Price Alerts</div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kpi-alerts-count">3 Armed</span>
+        </div>
+        <div class="kpi-sub" id="kpi-alerts-sub">Target, Stop &amp; 15:55 Bell</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Risk Gatekeeper</div>
+        <div class="kpi-value-row">
+          <span class="verdict-pill pill-pass" id="kpi-risk-badge">PASS</span>
+        </div>
+        <div class="kpi-sub" id="kpi-risk-sub">8 Checks Cleared</div>
+      </div>
+    </section>
+
+    <!-- Visual 8-Step Pipeline Tracker -->
+    <section class="pipeline-section">
+      <div class="section-title-row">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          Continuous 8-Skill Trading Pipeline
+        </div>
+        <div class="pipeline-legend">
+          <span class="legend-item"><span class="legend-dot dot-ready"></span> Ready</span>
+          <span class="legend-item"><span class="legend-dot dot-active"></span> Active</span>
+          <span class="legend-item"><span class="legend-dot dot-passed"></span> Passed</span>
+        </div>
+      </div>
+
+      <div class="pipeline-track" id="pipeline-track">
+        <div class="pipeline-node active" id="node-scanner" onclick="switchTab('watchlist')">
+          <div class="node-step">01</div>
+          <div class="node-name">Scanner</div>
+          <div class="node-tool">trader-scanner</div>
+          <div class="node-status" id="node-scanner-status">Scanned 231</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node active" id="node-news" onclick="switchTab('news')">
+          <div class="node-step">02</div>
+          <div class="node-name">News &amp; 8-K</div>
+          <div class="node-tool">trader-news</div>
+          <div class="node-status" id="node-news-status">Headlines Synced</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node active" id="node-entry" onclick="switchTab('watchlist')">
+          <div class="node-step">03</div>
+          <div class="node-name">Entry Timer</div>
+          <div class="node-tool">trader-entry</div>
+          <div class="node-status" id="node-entry-status">TSLA Triggered</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node active" id="node-exit" onclick="switchTab('timemachine')">
+          <div class="node-step">04</div>
+          <div class="node-name">Exit Planner</div>
+          <div class="node-tool">trader-exit</div>
+          <div class="node-status" id="node-exit-status">Stop $358.32 / 1R</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node active" id="node-timemachine" onclick="switchTab('timemachine')">
+          <div class="node-step">05</div>
+          <div class="node-name">Time Machine</div>
+          <div class="node-tool">trader-timemachine</div>
+          <div class="node-status" id="node-timemachine-status">10k Replays Run</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node active" id="node-budget" onclick="switchTab('orders')">
+          <div class="node-step">06</div>
+          <div class="node-name">Budget Sizer</div>
+          <div class="node-tool">trader-budget</div>
+          <div class="node-status" id="node-budget-status">8 Shares ($46.88 Risk)</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node active" id="node-risk" onclick="switchTab('orders')">
+          <div class="node-step">07</div>
+          <div class="node-name">Risk Manager</div>
+          <div class="node-tool">trader-risk</div>
+          <div class="node-status status-pass" id="node-risk-status">PASS Clearance</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node active" id="node-broker" onclick="switchTab('orders')">
+          <div class="node-step">08</div>
+          <div class="node-name">Order Ticket</div>
+          <div class="node-tool">trader-broker</div>
+          <div class="node-status" id="node-broker-status">Paper Bracket Ready</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="nav-tabs" id="main-nav-tabs">
+      <button class="tab-btn active" data-tab="watchlist" onclick="switchTab('watchlist')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+        Watchlist &amp; Scanner
+      </button>
+      <button class="tab-btn" data-tab="timemachine" onclick="switchTab('timemachine')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Time Machine Simulation
+      </button>
+      <button class="tab-btn" data-tab="orders" onclick="switchTab('orders')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        Orders &amp; Risk Audit
+      </button>
+      <button class="tab-btn" data-tab="news" onclick="switchTab('news')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+        Breaking News &amp; SEC
+      </button>
+      <button class="tab-btn" data-tab="alerts" onclick="switchTab('alerts')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Alerts Daemon
+        <span class="tab-badge" id="tab-alerts-badge">3</span>
+      </button>
+      <button class="tab-btn" data-tab="pelosi" onclick="switchTab('pelosi')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 9.5-7 11-3.5-1.5-7-6-7-11V6l7-4z"/></svg>
+        Pelosi Tracker
+      </button>
+      <button class="tab-btn" data-tab="logs" onclick="switchTab('logs')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        24/7 Console Logs
+      </button>
+    </nav>
+
+    <!-- Content Workspace Area -->
+    <main class="main-content">
+
+      <!-- TAB 1: WATCHLIST & SCANNER -->
+      <div class="tab-pane active" id="pane-watchlist">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h3>Watchlist &amp; 15-Minute Opening Range Breakout (ORB) Radar</h3>
+              <p class="panel-desc">Monitors 5-minute candles closing above the opening range (9:30 - 9:45 ET). Triggers only on completed bar closes.</p>
+            </div>
+            <div class="panel-tools">
+              <form class="add-symbol-form" onsubmit="addSymbolFromInput(event)">
+                <input type="text" id="input-symbol" placeholder="Add Ticker (e.g. QQQ)" maxlength="6">
+                <button type="submit" class="btn btn-secondary btn-sm">+ Add</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="watchlist-table">
+              <thead>
+                <tr>
+                  <th>Symbol</th>
+                  <th>Current Price</th>
+                  <th>Day Move</th>
+                  <th>15m Range (Low - High)</th>
+                  <th>ORB Status</th>
+                  <th>Volume Multiple</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="watchlist-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: TIME MACHINE SIMULATION -->
+      <div class="tab-pane" id="pane-timemachine">
+        <div class="grid-2col">
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">
+                <h3>Monte Carlo 10,000-Replay Engine</h3>
+                <p class="panel-desc">Replays the remainder of the trading day 10,000 times drawn from the stock's actual 5-minute historical candles at that exact time of day.</p>
+              </div>
+              <div class="seed-badge" id="tm-seed-badge">Seed: 19 (Deterministic)</div>
+            </div>
+
+            <div class="tm-odds-grid">
+              <div class="odds-card odds-target">
+                <div class="odds-val" id="tm-target-pct">29.4%</div>
+                <div class="odds-label">Target First (1R)</div>
+                <div class="odds-desc">Hits take-profit ($370.04) before stop</div>
+              </div>
+
+              <div class="odds-card odds-stop">
+                <div class="odds-val" id="tm-stop-pct">25.5%</div>
+                <div class="odds-label">Stop First</div>
+                <div class="odds-desc">Hits midpoint stop ($358.32) first</div>
+              </div>
+
+              <div class="odds-card odds-neither">
+                <div class="odds-val" id="tm-open-pct">45.1%</div>
+                <div class="odds-label">Open at 4:00 PM</div>
+                <div class="odds-desc">Neither hit by closing bell</div>
+              </div>
+
+              <div class="odds-card odds-green">
+                <div class="odds-val" id="tm-green-pct">51.7%</div>
+                <div class="odds-label">Green Finish</div>
+                <div class="odds-desc">Target hit OR finishes above entry</div>
+              </div>
+            </div>
+
+            <!-- Mathematical Odds Distribution Bar -->
+            <div class="odds-bar-container">
+              <div class="odds-bar-header">
+                <span>Distribution of Outcomes:</span>
+                <span id="tm-bar-legend">Target 29.4% | Stop 25.5% | Open 45.1%</span>
+              </div>
+              <div class="stacked-bar">
+                <div class="bar-slice bar-target" style="width: 29.4%" title="Target First: 29.4%"></div>
+                <div class="bar-slice bar-open" style="width: 45.1%" title="Open at Close: 45.1%"></div>
+                <div class="bar-slice bar-stop" style="width: 25.5%" title="Stop First: 25.5%"></div>
+              </div>
+            </div>
+
+            <!-- Mathematical Verdict Banner -->
+            <div class="verdict-banner" id="tm-verdict-banner">
+              <div class="verdict-icon">⚖️</div>
+              <div class="verdict-content">
+                <div class="verdict-headline" id="tm-verdict-title">VERDICT: CLOSE TO A COIN FLIP</div>
+                <div class="verdict-text" id="tm-verdict-text">
+                  Target first 29.4% vs stop first 25.5%. 45.1% of sessions remain open at 4:00 PM. Never risk more than your 1% account budget.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">
+                <h3>Real Historical Replay (59 Past Sessions)</h3>
+                <p class="panel-desc">Exact same rule tested on 59 historical trading days (2026-07-27 to 2026-10-16).</p>
+              </div>
+            </div>
+
+            <div class="history-stats-list">
+              <div class="history-stat-row">
+                <span class="hist-label">Rule Triggered</span>
+                <span class="hist-value" id="hist-fired">33 times</span>
+              </div>
+              <div class="history-stat-row">
+                <span class="hist-label">Hit Target First</span>
+                <span class="hist-value text-emerald" id="hist-target">13 times (39.4%)</span>
+              </div>
+              <div class="history-stat-row">
+                <span class="hist-label">Hit Stop First</span>
+                <span class="hist-value text-rose" id="hist-stop">15 times (45.5%)</span>
+              </div>
+              <div class="history-stat-row">
+                <span class="hist-label">Neither Hit (Flat at close)</span>
+                <span class="hist-value text-muted" id="hist-neither">5 times (15.1%)</span>
+              </div>
+              <div class="history-stat-row">
+                <span class="hist-label">Average R Outcome</span>
+                <span class="hist-value text-amber" id="hist-avg-r">-0.062 R</span>
+              </div>
+            </div>
+
+            <div class="note-box">
+              <div class="note-title">💡 Why Time Machine Matters</div>
+              <p>Most retail day traders enter breakouts blind to the odds. Time Machine reveals that even with a strong setup, market friction and intraday chop make it nearly 50/50. Capital protection via position sizing is the only edge.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: ORDERS & RISK AUDIT -->
+      <div class="tab-pane" id="pane-orders">
+        <div class="grid-2col">
+          <!-- Proposed Orders / Broker Ticket -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">
+                <h3>Broker Order Ticket (Alpaca Paper Trading)</h3>
+                <p class="panel-desc">Bracket orders require explicit approval. Nothing is routed without PASS clearance.</p>
+              </div>
+              <span class="tag-paper">Paper Default</span>
+            </div>
+
+            <div class="order-ticket-container" id="order-ticket-container">
+              <div class="ticket-header">
+                <div class="ticket-symbol" id="ticket-sym">TSLA</div>
+                <div class="ticket-side side-buy" id="ticket-side">BUY (LONG)</div>
+                <div class="ticket-qty" id="ticket-qty">8 Shares</div>
+              </div>
+
+              <div class="ticket-grid">
+                <div class="ticket-cell">
+                  <span class="cell-label">Order Type</span>
+                  <span class="cell-val">Bracket (Market Entry)</span>
+                </div>
+                <div class="ticket-cell">
+                  <span class="cell-label">Planned Entry</span>
+                  <span class="cell-val" id="ticket-entry">$364.18</span>
+                </div>
+                <div class="ticket-cell">
+                  <span class="cell-label">Stop-Loss Price</span>
+                  <span class="cell-val text-rose" id="ticket-stop">$358.32</span>
+                </div>
+                <div class="ticket-cell">
+                  <span class="cell-label">Take-Profit (1R)</span>
+                  <span class="cell-val text-emerald" id="ticket-target">$370.04</span>
+                </div>
+                <div class="ticket-cell">
+                  <span class="cell-label">Risk Per Share</span>
+                  <span class="cell-val" id="ticket-risk-share">$5.86</span>
+                </div>
+                <div class="ticket-cell">
+                  <span class="cell-label">Max Loss at Stop</span>
+                  <span class="cell-val text-rose" id="ticket-max-loss">$46.88</span>
+                </div>
+              </div>
+
+              <div class="ticket-note" id="ticket-why">
+                Opening-range breakout on TSLA: 8 shares, bound by your $50 max loss per trade (8 x $5.86 = $46.88).
+              </div>
+            </div>
+          </div>
+
+          <!-- 8-Point Risk Inspection -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">
+                <h3>Autonomous Risk Manager (trader-risk)</h3>
+                <p class="panel-desc">Enforces strict personal safety bounds before orders reach any broker.</p>
+              </div>
+              <span class="verdict-pill pill-pass" id="risk-audit-badge">PASS</span>
+            </div>
+
+            <div class="risk-checklist">
+              <div class="risk-check-item passed">
+                <div class="risk-check-icon">✓</div>
+                <div class="risk-check-content">
+                  <div class="risk-check-title">Max Loss Per Trade: Passed ($46.88 &le; $50.00 Limit)</div>
+                  <div class="risk-check-desc">Position sized so stop fill loss remains under 1% account budget.</div>
+                </div>
+              </div>
+
+              <div class="risk-check-item passed">
+                <div class="risk-check-icon">✓</div>
+                <div class="risk-check-content">
+                  <div class="risk-check-title">Daily Loss Ceiling: Passed ($0 of $150 daily limit)</div>
+                  <div class="risk-check-desc">Trading halts automatically if cumulative day losses reach $150.</div>
+                </div>
+              </div>
+
+              <div class="risk-check-item passed">
+                <div class="risk-check-icon">✓</div>
+                <div class="risk-check-content">
+                  <div class="risk-check-title">Reward to Risk Ratio: Passed (1.00 &ge; 1.00 Min)</div>
+                  <div class="risk-check-desc">Target profit equals or exceeds initial stop risk.</div>
+                </div>
+              </div>
+
+              <div class="risk-check-item passed">
+                <div class="risk-check-icon">✓</div>
+                <div class="risk-check-content">
+                  <div class="risk-check-title">Mandatory Stop-Loss: Enforced (358.32 Opening Range Mid)</div>
+                  <div class="risk-check-desc">Zero orders without predefined exit stops are permitted.</div>
+                </div>
+              </div>
+
+              <div class="risk-check-item passed">
+                <div class="risk-check-icon">✓</div>
+                <div class="risk-check-content">
+                  <div class="risk-check-title">Day Trades Limit: Passed (0 of 3 trades executed today)</div>
+                  <div class="risk-check-desc">Respects max intraday round-trip limits and PDT guard.</div>
+                </div>
+              </div>
+
+              <div class="risk-check-item passed">
+                <div class="risk-check-icon">✓</div>
+                <div class="risk-check-content">
+                  <div class="risk-check-title">Cash Buffer: Passed ($2,086.56 cash remaining &gt; 10%)</div>
+                  <div class="risk-check-desc">Account maintains minimum liquidity buffer.</div>
+                </div>
+              </div>
+
+              <div class="risk-check-item passed">
+                <div class="risk-check-icon">✓</div>
+                <div class="risk-check-content">
+                  <div class="risk-check-title">Intraday Entry Window: Passed (09:45 to 15:30 ET)</div>
+                  <div class="risk-check-desc">No new orders placed during opening volatility or before close.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: BREAKING NEWS & SEC 8-K FEED -->
+      <div class="tab-pane" id="pane-news">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h3>Breaking News, Market Movers &amp; SEC 8-K Filings</h3>
+              <p class="panel-desc">Real-time headlines and filings for watchlist stocks. Automatically tagged for earnings, mergers, analyst actions, and regulatory filings.</p>
+            </div>
+          </div>
+
+          <div class="news-feed-list" id="news-feed-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: ALERTS DAEMON -->
+      <div class="tab-pane" id="pane-alerts">
+        <div class="grid-2col">
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">
+                <h3>Active Price &amp; NYSE Clock Alerts</h3>
+                <p class="panel-desc">Evaluates target hits, stop triggers, and end-of-day flatten rules on every cycle.</p>
+              </div>
+            </div>
+
+            <div class="alerts-list" id="alerts-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">
+                <h3>Arm New Price / Clock Alert</h3>
+                <p class="panel-desc">Configure instant monitoring for any ticker or session event.</p>
+              </div>
+            </div>
+
+            <form class="alert-form" onsubmit="createNewAlert(event)">
+              <div class="form-group">
+                <label for="alert-symbol">Ticker Symbol</label>
+                <input type="text" id="alert-symbol" placeholder="TSLA" required maxlength="6">
+              </div>
+
+              <div class="form-group">
+                <label for="alert-type">Rule Type</label>
+                <select id="alert-type" onchange="toggleAlertFields(this.value)">
+                  <option value="target">Target Price (At or Above)</option>
+                  <option value="stop">Stop Price (At or Below)</option>
+                  <option value="pct">Percent Move (Daily % Change)</option>
+                  <option value="time">Time Alarm (NYSE Clock)</option>
+                </select>
+              </div>
+
+              <div class="form-group" id="group-price">
+                <label for="alert-price">Target / Stop Price ($)</label>
+                <input type="number" step="0.01" id="alert-price" placeholder="370.04">
+              </div>
+
+              <div class="form-group hidden" id="group-pct">
+                <label for="alert-pct">Percent Threshold (%)</label>
+                <input type="number" step="0.1" id="alert-pct" placeholder="3.0">
+              </div>
+
+              <div class="form-group">
+                <label for="alert-note">Label / Description</label>
+                <input type="text" id="alert-note" placeholder="Profit target 1R exit">
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">+ Arm Alert</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: PELOSI / CONGRESSIONAL RADAR -->
+      <div class="tab-pane" id="pane-pelosi">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h3>Congressional Stock Disclosures (House Clerk PTR Tracker)</h3>
+              <p class="panel-desc">Monitors public Periodic Transaction Reports filed by Members of Congress (Nancy Pelosi CA-11, etc.) under the STOCK Act.</p>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="pelosi-table">
+              <thead>
+                <tr>
+                  <th>Filing Date</th>
+                  <th>Member of Congress</th>
+                  <th>District</th>
+                  <th>Doc Type</th>
+                  <th>Document ID</th>
+                  <th>Official Filing PDF</th>
+                </tr>
+              </thead>
+              <tbody id="pelosi-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 7: 24/7 LOGS & CONSOLE -->
+      <div class="tab-pane" id="pane-logs">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h3>24/7 Engine Live Execution Stream</h3>
+              <p class="panel-desc">Continuous real-time scheduler activity, background job status, and pipeline execution logs.</p>
+            </div>
+            <div class="panel-tools">
+              <button class="btn btn-secondary btn-sm" onclick="clearLogs()">Clear Console</button>
+            </div>
+          </div>
+
+          <div class="terminal-box" id="terminal-box">
+            <div class="terminal-logs" id="terminal-logs">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Footer Status Bar -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <span class="status-indicator-mini active"></span>
+        <span id="footer-status-text">Engine 24/7 running continuously in Simulation Mode</span>
+      </div>
+      <div class="footer-right">
+        <span>Standard Library Python 3.8+</span>
+        <span class="footer-sep">|</span>
+        <span>Paper Trading Safe</span>
+        <span class="footer-sep">|</span>
+        <span>Day Trader Pack v2.0</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

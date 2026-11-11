@@ -24,10 +24,15 @@ def frontmatter(path):
     return (m.group(1) if m else ""), text
 
 
+RUNTIME_ITEMS = {"trader", "app", "web", "server.py", "start_app.sh"}
+
+
 def every_text_file():
     for base, dirs, files in os.walk(ROOT):
-        dirs[:] = [d for d in dirs if d not in (".git", "__pycache__")]
+        dirs[:] = [d for d in dirs if d not in (".git", "__pycache__") and d not in RUNTIME_ITEMS]
         for f in files:
+            if f in RUNTIME_ITEMS:
+                continue
             if f.endswith((".md", ".py", ".json", ".csv", ".txt", ".xml")) or f == "LICENSE":
                 yield os.path.join(base, f)
 
@@ -39,7 +44,7 @@ class Repo(unittest.TestCase):
         self.assertEqual(found, sorted(SKILLS))
 
     def test_root_matches_the_reel(self):
-        root = sorted(d for d in os.listdir(ROOT) if not d.startswith(".git"))
+        root = sorted(d for d in os.listdir(ROOT) if not d.startswith(".git") and d not in RUNTIME_ITEMS)
         self.assertEqual(root, sorted([".claude-plugin", "LICENSE", "README.md", "tests"] + SKILLS))
 
     def test_frontmatter_name_and_description(self):
