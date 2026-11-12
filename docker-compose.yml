@@ -1,0 +1,27 @@
+services:
+  day-trader:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: day-trader-24-7:latest
+    container_name: day-trader-24-7
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:8080"
+    volumes:
+      # Persistent trading state (portfolio, orders, config, watchlists)
+      - ./trader:/app/trader
+    environment:
+      - PORT=8080
+      - PYTHONUNBUFFERED=1
+      - TZ=America/New_York
+      - SEC_USER_AGENT=DayTraderServer admin@example.com
+      # Optional: Alpaca Paper or Live REST API Credentials
+      # - ALPACA_API_KEY=your_alpaca_api_key
+      # - ALPACA_SECRET_KEY=your_alpaca_secret_key
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/status || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

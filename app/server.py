@@ -272,7 +272,8 @@ def run_server(port=8080):
 
 
 if __name__ == "__main__":
+    default_port = int(os.environ.get("PORT", "8080"))
     parser = argparse.ArgumentParser(description="24/7 Day Trader Web Application")
-    parser.add_argument("--port", type=int, default=8080, help="Port to serve on (default: 8080)")
+    parser.add_argument("--port", type=int, default=default_port, help="Port to serve on (default: 8080 or $PORT)")
     args = parser.parse_args()
     run_server(args.port)

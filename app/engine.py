@@ -169,6 +169,14 @@ class TradingEngine:
             except Exception:
                 pass
 
+        # Environment variable overrides (useful for Docker & cloud container deployments)
+        if os.environ.get("ALPACA_API_KEY"):
+            default_cfg["alpaca_api_key"] = os.environ["ALPACA_API_KEY"].strip()
+        if os.environ.get("ALPACA_SECRET_KEY"):
+            default_cfg["alpaca_secret_key"] = os.environ["ALPACA_SECRET_KEY"].strip()
+        if os.environ.get("SEC_USER_AGENT"):
+            default_cfg["sec_user_agent"] = os.environ["SEC_USER_AGENT"].strip()
+
         self.config = default_cfg
         with open(cfg_path, "w") as f:
             json.dump(self.config, f, indent=2)

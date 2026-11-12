@@ -1,0 +1,17 @@
+.git
+.gitignore
+.github
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+.vscode
+.idea
+*.log
+.claude-plugin
+scratch/
+tests/__pycache__
+app/__pycache__
+trader/__pycache__
+trader-*/**/__pycache__
