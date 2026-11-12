@@ -70,6 +70,12 @@
           </select>
         </div>
 
+        <!-- AI Auto-Pilot Toggle -->
+        <button class="btn btn-ai-toggle active" id="btn-ai-autopilot" onclick="toggleAIAutoPilot()" title="Toggle Autonomous 24/7 AI Actions">
+          <span class="ai-dot-pulse"></span>
+          <span id="ai-autopilot-text">🤖 AI Auto-Pilot: ON</span>
+        </button>
+
         <!-- Engine Toggle -->
         <button class="btn btn-engine-state btn-running" id="btn-toggle-engine" onclick="toggleEngine()">
           <span class="btn-pulse"></span>
@@ -145,6 +151,15 @@
           <span class="verdict-pill pill-pass" id="kpi-risk-badge">PASS</span>
         </div>
         <div class="kpi-sub" id="kpi-risk-sub">8 Checks Cleared</div>
+      </div>
+
+      <div class="kpi-card kpi-ai-clickable" onclick="switchTab('ai')" style="cursor: pointer;" title="Open Autonomous AI Agent 24/7 Dashboard">
+        <div class="kpi-label">AI Auto-Pilot 24/7</div>
+        <div class="kpi-value-row">
+          <span class="verdict-pill pill-pass" id="kpi-ai-badge">ACTIVE</span>
+          <span class="kpi-tag tag-blue" id="kpi-ai-thresh">80% Gate</span>
+        </div>
+        <div class="kpi-sub" id="kpi-ai-sub">0 Actions Today | Auto-Protect ON</div>
       </div>
     </section>
 
@@ -267,6 +282,11 @@
       <button class="tab-btn" data-tab="strategy" onclick="switchTab('strategy')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
         ⚡ Scalping &amp; 1m Setups
+      </button>
+      <button class="tab-btn btn-tab-ai" data-tab="ai" onclick="switchTab('ai')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
+        🤖 AI Agent 24/7
+        <span class="tab-badge badge-ai-pulse" id="tab-ai-badge">ACTIVE</span>
       </button>
       <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0 1.51-1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -903,6 +923,182 @@
         </div>
       </div>
 
+      <!-- TAB: AUTONOMOUS AI AGENT 24/7 -->
+      <div class="tab-pane" id="pane-ai">
+        <div class="ai-dashboard-container">
+          <!-- Top Hero Card -->
+          <div class="panel-card ai-hero-card">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="ai-badge-header">
+                  <span class="ai-beacon-dot"></span>
+                  <span class="ai-beacon-label">AUTONOMOUS 24/7 AGENT CORE</span>
+                </div>
+                <h3>Autonomous AI Trade Execution &amp; Risk Protection</h3>
+                <p class="panel-desc">Operating on your behalf 24 hours a day, 5 days a week. Continuously scores watchlist setups, routes bracket entries at high multi-factor conviction (&gt;=80%), automatically trails stops to Breakeven (+1.0R) to eliminate risk, banks profit targets, and flattens equities prior to market close.</p>
+              </div>
+              <div class="panel-tools ai-hero-tools">
+                <button class="btn btn-ai-toggle-large active" id="btn-pane-ai-toggle" onclick="toggleAIAutoPilot()">
+                  <span class="ai-dot-pulse"></span>
+                  <span id="pane-ai-toggle-label">Auto-Pilot: ACTIVE</span>
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="triggerAIEvaluationNow()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                  Evaluate Now
+                </button>
+              </div>
+            </div>
+
+            <!-- AI High-Level Metrics Row -->
+            <div class="ai-metrics-row">
+              <div class="ai-metric-box">
+                <div class="ai-metric-lbl">Agent Operating State</div>
+                <div class="ai-metric-val text-emerald" id="ai-metric-status">Autonomous Scanning 24/7</div>
+                <div class="ai-metric-sub">Runs Every Engine Cycle</div>
+              </div>
+
+              <div class="ai-metric-box">
+                <div class="ai-metric-lbl">Conviction Gate</div>
+                <div class="ai-metric-val text-cyan" id="ai-metric-threshold">80% Minimum</div>
+                <div class="ai-metric-sub">4-Factor Quantitative Verification</div>
+              </div>
+
+              <div class="ai-metric-box">
+                <div class="ai-metric-lbl">Autonomous Actions Today</div>
+                <div class="ai-metric-val text-amber" id="ai-metric-actions">0 Executions</div>
+                <div class="ai-metric-sub" id="ai-metric-last-action">Last: None</div>
+              </div>
+
+              <div class="ai-metric-box">
+                <div class="ai-metric-lbl">Protection Protocols</div>
+                <div class="ai-metric-val text-emerald">Active &amp; Guarded</div>
+                <div class="ai-metric-sub">Breakeven Lock + EOD Flatten</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2-Column Main Workspace -->
+          <div class="ai-grid-split">
+            <!-- Left Column: 4-Factor Conviction Model & Parameter Tuning -->
+            <div class="ai-col-left">
+              <!-- 4-Factor Model Explanation & Gauge -->
+              <div class="panel-card">
+                <div class="card-header-simple">
+                  <h4>🧠 4-Factor Multi-Dimensional Conviction Model</h4>
+                  <span class="info-pill">Max 100 Pts</span>
+                </div>
+                <p class="card-sub-info">Every ticker on your watchlist is continuously scored across 4 quantitative dimensions before any autonomous order is placed on your behalf:</p>
+
+                <div class="conviction-factors-list">
+                  <div class="factor-row">
+                    <div class="factor-header">
+                      <span class="factor-name">1. Technical Momentum &amp; Breakout</span>
+                      <span class="factor-weight text-cyan">0 - 35 pts</span>
+                    </div>
+                    <div class="factor-desc">Evaluates 1m / 5m candle breakouts above opening range, volume multiplier &gt;= 1.2x, or active 24/5 forex pip trend.</div>
+                    <div class="factor-bar-bg"><div class="factor-bar-fill" style="width: 35%;"></div></div>
+                  </div>
+
+                  <div class="factor-row">
+                    <div class="factor-header">
+                      <span class="factor-name">2. Monte Carlo Time Machine Odds</span>
+                      <span class="factor-weight text-emerald">0 - 25 pts</span>
+                    </div>
+                    <div class="factor-desc">10,000 statistical replays confirming probability of green finish &gt;= 50% and Target First &gt; Stop First.</div>
+                    <div class="factor-bar-bg"><div class="factor-bar-fill factor-emerald" style="width: 25%;"></div></div>
+                  </div>
+
+                  <div class="factor-row">
+                    <div class="factor-header">
+                      <span class="factor-name">3. Risk:Reward Ratio &amp; Capital Safety</span>
+                      <span class="factor-weight text-amber">0 - 25 pts</span>
+                    </div>
+                    <div class="factor-desc">Mandates R:R &gt;= 1.0R, single-trade risk capped under 2% account equity, and strict position sizing.</div>
+                    <div class="factor-bar-bg"><div class="factor-bar-fill factor-amber" style="width: 25%;"></div></div>
+                  </div>
+
+                  <div class="factor-row">
+                    <div class="factor-header">
+                      <span class="factor-name">4. News Catalysts &amp; SEC Regulatory</span>
+                      <span class="factor-weight text-purple">0 - 15 pts</span>
+                    </div>
+                    <div class="factor-desc">Screens breaking news feed, SEC 8-K filings, and earnings for verified positive catalysts.</div>
+                    <div class="factor-bar-bg"><div class="factor-bar-fill factor-purple" style="width: 15%;"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AI Tuning & Protection Settings -->
+              <div class="panel-card">
+                <div class="card-header-simple">
+                  <h4>⚙️ AI Auto-Pilot Tuning &amp; Risk Guardrails</h4>
+                  <span class="badge-safe">Safety Enforced</span>
+                </div>
+
+                <form class="ai-config-form" id="ai-config-form" onsubmit="saveAIConfigForm(event)">
+                  <div class="form-group">
+                    <div class="label-with-val">
+                      <label for="input-ai-threshold">Minimum Conviction Threshold to Fire Orders:</label>
+                      <span class="range-val-badge" id="ai-threshold-val">80%</span>
+                    </div>
+                    <input type="range" id="input-ai-threshold" min="50" max="95" step="5" value="80" oninput="document.getElementById('ai-threshold-val').textContent = this.value + '%'">
+                    <span class="form-hint">Orders execute autonomously ONLY when total 4-factor conviction score matches or exceeds this threshold.</span>
+                  </div>
+
+                  <div class="checkbox-group-styled">
+                    <label class="custom-checkbox-row">
+                      <input type="checkbox" id="input-ai-breakeven" checked>
+                      <div class="checkbox-text">
+                        <strong>🛡️ Auto Trailing Stop to Breakeven (+1.0R Lock)</strong>
+                        <span>When unrealized gain reaches +1.0R, AI instantly trails stop loss to entry price, eliminating downside risk completely.</span>
+                      </div>
+                    </label>
+
+                    <label class="custom-checkbox-row">
+                      <input type="checkbox" id="input-ai-flatten" checked>
+                      <div class="checkbox-text">
+                        <strong>⏰ Auto End-Of-Day Cutoff Flattening (15:55 ET)</strong>
+                        <span>Automatically liquidates all intraday stock day-trades before 16:00 ET close to prevent overnight gap risk.</span>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div class="form-actions-inline">
+                    <button type="submit" class="btn btn-primary btn-block">
+                      💾 Save AI Guardrails &amp; Settings
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Right Column: Real-Time Live AI Decision Chain & Reasoning Feed -->
+            <div class="ai-col-right">
+              <div class="panel-card ai-feed-card">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <h4>📡 Live Autonomous AI Decision Stream &amp; Reasoning Feed</h4>
+                    <p class="panel-desc">Real-time log of every market decision, risk check, breakeven stop adjustment, and bracket order fired on your behalf.</p>
+                  </div>
+                  <div class="panel-tools">
+                    <span class="badge-live-pulse"><span class="pulse-ring-mini"></span> LIVE 24/7</span>
+                  </div>
+                </div>
+
+                <div class="ai-decisions-container" id="ai-decisions-feed">
+                  <!-- Populated dynamically by renderAIAgent() -->
+                  <div class="empty-state-card">
+                    <div class="empty-icon">🤖</div>
+                    <div class="empty-title">AI Agent Initializing...</div>
+                    <div class="empty-desc">Waiting for next 24/7 background cycle or click "Evaluate Now" to scan immediately.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- TAB 8: SETTINGS & RISK RULES -->
       <div class="tab-pane" id="pane-settings">
         <div class="panel-card">
@@ -1055,6 +1251,42 @@
                     ⚡ Test Broker Connection
                   </button>
                   <div class="broker-test-result" id="broker-test-result"></div>
+                </div>
+              </div>
+
+              <!-- Section 4: Autonomous AI Agent -->
+              <div class="settings-section">
+                <div class="settings-section-title">🤖 Autonomous AI 24/7 Controls</div>
+
+                <div class="form-group">
+                  <label for="cfg-ai-enabled">AI Auto-Pilot Status</label>
+                  <select id="cfg-ai-enabled">
+                    <option value="true">Enabled (Autonomous 24/7 Execution)</option>
+                    <option value="false">Disabled (Manual Execution Only)</option>
+                  </select>
+                  <span class="form-hint">Allows AI agent to autonomously route orders &amp; manage trailing stops.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-ai-confidence">Minimum Conviction Threshold (%)</label>
+                  <input type="number" id="cfg-ai-confidence" min="50" max="95" step="5" value="80">
+                  <span class="form-hint">Min 4-factor score required for autonomous order submission.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-ai-breakeven">Auto Breakeven Trailing Stop</label>
+                  <select id="cfg-ai-breakeven">
+                    <option value="true">Enabled (+1.0R Locks Breakeven)</option>
+                    <option value="false">Disabled (Fixed Stop Only)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-ai-flatten">Auto End-Of-Day Flatten</label>
+                  <select id="cfg-ai-flatten">
+                    <option value="true">Enabled (Liquidate Prior to Close)</option>
+                    <option value="false">Disabled (Hold Overnight)</option>
+                  </select>
                 </div>
               </div>
             </div>

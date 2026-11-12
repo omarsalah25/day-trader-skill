@@ -1515,4 +1515,511 @@ body {
   box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
 }
 
+/* ==========================================================================
+   Autonomous 24/7 AI Agent Styles
+   ========================================================================== */
+
+/* Header AI Toggle Button */
+.btn-ai-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+}
+
+.btn-ai-toggle:hover {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: #10b981;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+}
+
+.btn-ai-toggle.paused {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: none;
+}
+
+.btn-ai-toggle.paused .ai-dot-pulse {
+  background: #f59e0b;
+  animation: none;
+}
+
+.ai-dot-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: aiBeaconPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes aiBeaconPulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.35); opacity: 1; box-shadow: 0 0 12px #10b981; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+/* KPI AI Pill & Badge */
+.pill-ai {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.kpi-ai-clickable {
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.kpi-ai-clickable:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-emerald);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);
+}
+
+/* Nav Tab AI Glowing Badge */
+.btn-tab-ai {
+  position: relative;
+}
+.badge-ai-pulse {
+  background: #10b981;
+  color: #030712;
+  font-weight: 800;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: 6px;
+  animation: badgeGlow 2s infinite alternate;
+}
+@keyframes badgeGlow {
+  0% { opacity: 0.85; box-shadow: 0 0 4px rgba(16, 185, 129, 0.4); }
+  100% { opacity: 1; box-shadow: 0 0 10px rgba(16, 185, 129, 0.8); }
+}
+
+/* AI Dashboard Pane Layout */
+.ai-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ai-hero-card {
+  background: linear-gradient(135deg, rgba(13, 19, 34, 0.95), rgba(16, 26, 46, 0.95));
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.ai-badge-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #10b981;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.ai-beacon-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: aiBeaconPulse 1.5s infinite;
+}
+
+.ai-hero-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-ai-toggle-large {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-emerald);
+  color: #030712;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+}
+
+.btn-ai-toggle-large:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+}
+
+.btn-ai-toggle-large.paused {
+  background: var(--accent-amber);
+  color: #030712;
+  box-shadow: none;
+}
+
+.ai-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-color);
+}
+
+.ai-metric-box {
+  background: rgba(6, 9, 18, 0.55);
+  border: 1px solid var(--border-color);
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+}
+
+.ai-metric-lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.ai-metric-val {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: var(--font-display);
+}
+
+.ai-metric-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* 2-Column AI Grid Split */
+.ai-grid-split {
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 1100px) {
+  .ai-grid-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ai-col-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card-header-simple {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.card-header-simple h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.card-sub-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+/* Conviction Factors List */
+.conviction-factors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.factor-row {
+  background: rgba(6, 9, 18, 0.45);
+  border: 1px solid var(--border-color);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+}
+
+.factor-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.factor-desc {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.factor-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.factor-bar-fill {
+  height: 100%;
+  background: var(--accent-cyan);
+  border-radius: 3px;
+}
+.factor-emerald { background: var(--accent-emerald); }
+.factor-amber { background: var(--accent-amber); }
+.factor-purple { background: var(--accent-purple); }
+
+/* Range badge & styled checkboxes */
+.label-with-val {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.range-val-badge {
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  font-weight: 800;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.checkbox-group-styled {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.custom-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(6, 9, 18, 0.4);
+  border: 1px solid var(--border-color);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.custom-checkbox-row:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.custom-checkbox-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--accent-emerald);
+  cursor: pointer;
+}
+
+.checkbox-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.checkbox-text strong {
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.checkbox-text span {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* AI Decisions Live Feed */
+.ai-feed-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 520px;
+}
+
+.ai-decisions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  max-height: 640px;
+  padding-right: 6px;
+}
+
+.ai-decision-card {
+  background: rgba(11, 16, 29, 0.85);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--text-dim);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  transition: all 0.2s ease;
+}
+
+.ai-decision-card:hover {
+  background: rgba(16, 23, 41, 0.95);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.ai-decision-card.executed {
+  border-left-color: var(--accent-emerald);
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.08);
+}
+
+.ai-decision-card.breakeven {
+  border-left-color: var(--accent-blue);
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.08);
+}
+
+.ai-decision-card.target {
+  border-left-color: var(--accent-purple);
+  box-shadow: 0 2px 10px rgba(139, 92, 246, 0.08);
+}
+
+.ai-decision-card.flatten {
+  border-left-color: var(--accent-amber);
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.08);
+}
+
+.ai-decision-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ai-action-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.ai-action-badge.badge-buy {
+  background: rgba(16, 185, 129, 0.18);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.ai-action-badge.badge-breakeven {
+  background: rgba(59, 130, 246, 0.18);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+}
+
+.ai-action-badge.badge-target {
+  background: rgba(139, 92, 246, 0.18);
+  color: #c084fc;
+  border: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+.ai-action-badge.badge-flatten {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.ai-action-badge.badge-hold {
+  background: rgba(100, 116, 139, 0.18);
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.35);
+}
+
+.ai-conviction-meter-mini {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-conviction-score-txt {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.ai-conviction-bar {
+  width: 60px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.ai-conviction-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.ai-decision-narrative {
+  font-size: 13px;
+  color: var(--text-main);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.ai-factors-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.ai-factor-chip {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.ai-decision-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
 

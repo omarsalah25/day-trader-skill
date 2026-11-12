@@ -126,6 +126,11 @@ function renderState(s) {
   // 9. Logs
   renderLogs(s);
 
+  // 10. Autonomous AI Agent 24/7
+  if (s.ai_agent) {
+    renderAIAgent(s.ai_agent);
+  }
+
   // Audio trigger on new cycle completion
   if (lastCycleCount !== -1 && s.cycle_count > lastCycleCount) {
     if (s.triggered_alerts && s.triggered_alerts.length > 0) {
@@ -712,6 +717,10 @@ async function loadConfig(force = false) {
     setVal('cfg-alpaca-key', cfg.alpaca_api_key || '');
     setVal('cfg-alpaca-secret', cfg.alpaca_secret_key || '');
     setVal('cfg-pdt-guard', String(cfg.pdt_guard === true));
+    setVal('cfg-ai-enabled', String(cfg.ai_autonomous !== false));
+    setVal('cfg-ai-confidence', cfg.ai_confidence_threshold || 80);
+    setVal('cfg-ai-breakeven', String(cfg.ai_auto_breakeven !== false));
+    setVal('cfg-ai-flatten', String(cfg.ai_auto_flatten !== false));
 
     renderStrategyUI(cfg);
   } catch (err) {
@@ -744,7 +753,11 @@ async function saveSettingsForm(e) {
     paper: getVal('cfg-paper-toggle') !== 'false',
     alpaca_api_key: getVal('cfg-alpaca-key'),
     alpaca_secret_key: getVal('cfg-alpaca-secret'),
-    pdt_guard: getVal('cfg-pdt-guard') === 'true'
+    pdt_guard: getVal('cfg-pdt-guard') === 'true',
+    ai_autonomous: getVal('cfg-ai-enabled') !== 'false',
+    ai_confidence_threshold: parseInt(getVal('cfg-ai-confidence')) || 80,
+    ai_auto_breakeven: getVal('cfg-ai-breakeven') !== 'false',
+    ai_auto_flatten: getVal('cfg-ai-flatten') !== 'false'
   };
 
   try {
@@ -976,6 +989,257 @@ async function testBrokerConnection() {
   } catch (err) {
     box.className = 'broker-test-result error';
     box.textContent = 'Connection test failed: ' + err.message;
+  }
+}
+
+// ==========================================================================
+// Autonomous 24/7 AI Agent Frontend Logic
+// ==========================================================================
+
+function renderAIAgent(ai) {
+  if (!ai) return;
+
+  const isEnabled = ai.enabled !== false;
+  const thresh = ai.confidence_threshold || 80;
+  const actionsCount = ai.actions_today || 0;
+  const statusTxt = ai.status || (isEnabled ? 'Autonomous Scanning 24/7' : 'Paused (Manual Mode)');
+
+  // 1. Header Toggle Button
+  const btnToggle = document.getElementById('btn-ai-autopilot');
+  const txtToggle = document.getElementById('ai-autopilot-text');
+  if (btnToggle && txtToggle) {
+    if (isEnabled) {
+      btnToggle.className = 'btn btn-ai-toggle active';
+      txtToggle.textContent = '🤖 AI Auto-Pilot: ON';
+    } else {
+      btnToggle.className = 'btn btn-ai-toggle paused';
+      txtToggle.textContent = '🤖 AI Auto-Pilot: OFF';
+    }
+  }
+
+  // 2. Tab Pane Toggle Button
+  const btnPaneToggle = document.getElementById('btn-pane-ai-toggle');
+  const lblPaneToggle = document.getElementById('pane-ai-toggle-label');
+  if (btnPaneToggle && lblPaneToggle) {
+    if (isEnabled) {
+      btnPaneToggle.className = 'btn btn-ai-toggle-large active';
+      lblPaneToggle.textContent = 'Auto-Pilot: ACTIVE';
+    } else {
+      btnPaneToggle.className = 'btn btn-ai-toggle-large paused';
+      lblPaneToggle.textContent = 'Auto-Pilot: PAUSED';
+    }
+  }
+
+  // 3. Tab Badge
+  const tabBadge = document.getElementById('tab-ai-badge');
+  if (tabBadge) {
+    tabBadge.textContent = isEnabled ? 'ACTIVE' : 'OFF';
+    tabBadge.style.background = isEnabled ? '#10b981' : '#64748b';
+  }
+
+  // 4. KPI Summary Pill
+  const kpiBadge = document.getElementById('kpi-ai-badge');
+  const kpiThresh = document.getElementById('kpi-ai-thresh');
+  const kpiSub = document.getElementById('kpi-ai-sub');
+  if (kpiBadge) {
+    kpiBadge.textContent = isEnabled ? 'ACTIVE' : 'PAUSED';
+    kpiBadge.className = isEnabled ? 'verdict-pill pill-pass' : 'verdict-pill pill-warn';
+  }
+  if (kpiThresh) {
+    kpiThresh.textContent = `${thresh}% Gate`;
+  }
+  if (kpiSub) {
+    kpiSub.textContent = `${actionsCount} Actions Today | ${ai.auto_breakeven !== false ? 'Auto-Protect ON' : 'Fixed Stops'}`;
+  }
+
+  // 5. Pane High-Level Metrics
+  const metricStatus = document.getElementById('ai-metric-status');
+  const metricThresh = document.getElementById('ai-metric-threshold');
+  const metricActions = document.getElementById('ai-metric-actions');
+  const metricLast = document.getElementById('ai-metric-last-action');
+
+  if (metricStatus) {
+    metricStatus.textContent = statusTxt;
+    metricStatus.className = isEnabled ? 'ai-metric-val text-emerald' : 'ai-metric-val text-amber';
+  }
+  if (metricThresh) {
+    metricThresh.textContent = `${thresh}% Minimum`;
+  }
+  if (metricActions) {
+    metricActions.textContent = `${actionsCount} Execution${actionsCount === 1 ? '' : 's'}`;
+  }
+  if (metricLast) {
+    metricLast.textContent = `Last: ${ai.last_action || 'None'}`;
+  }
+
+  // 6. Form Slider & Checkboxes (only if user is not actively adjusting)
+  const inputThresh = document.getElementById('input-ai-threshold');
+  const valThresh = document.getElementById('ai-threshold-val');
+  if (inputThresh && document.activeElement !== inputThresh) {
+    inputThresh.value = thresh;
+  }
+  if (valThresh && document.activeElement !== inputThresh) {
+    valThresh.textContent = `${thresh}%`;
+  }
+
+  const checkBe = document.getElementById('input-ai-breakeven');
+  if (checkBe && document.activeElement !== checkBe) {
+    checkBe.checked = ai.auto_breakeven !== false;
+  }
+  const checkFlat = document.getElementById('input-ai-flatten');
+  if (checkFlat && document.activeElement !== checkFlat) {
+    checkFlat.checked = ai.auto_flatten !== false;
+  }
+
+  // 7. Live Decision Chain & Reasoning Feed
+  const feed = document.getElementById('ai-decisions-feed');
+  if (!feed) return;
+
+  const decisions = ai.decisions || [];
+  if (decisions.length === 0) {
+    feed.innerHTML = `
+      <div class="empty-state-card">
+        <div class="empty-icon">🤖</div>
+        <div class="empty-title">AI Agent Operating 24/7</div>
+        <div class="empty-desc">Evaluating candidate setups and risk rules every 30s. Click "Evaluate Now" to scan watchlist immediately.</div>
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+  decisions.forEach(d => {
+    let actionClass = 'executed';
+    let badgeClass = 'badge-buy';
+    let actionIcon = '⚡';
+    let actionLabel = d.action || 'EVALUATE';
+
+    if (d.action === 'AUTONOMOUS_BUY_EXECUTED') {
+      actionClass = 'executed';
+      badgeClass = 'badge-buy';
+      actionIcon = '⚡';
+      actionLabel = 'AUTONOMOUS BUY EXECUTED';
+    } else if (d.action === 'TRAILING_STOP_BREAKEVEN') {
+      actionClass = 'breakeven';
+      badgeClass = 'badge-breakeven';
+      actionIcon = '🛡️';
+      actionLabel = 'STOP -> BREAKEVEN LOCKED';
+    } else if (d.action === 'TARGET_PROFIT_EXIT') {
+      actionClass = 'target';
+      badgeClass = 'badge-target';
+      actionIcon = '🎯';
+      actionLabel = 'TARGET HIT -> PROFIT EXIT';
+    } else if (d.action === 'EOD_FLATTEN') {
+      actionClass = 'flatten';
+      badgeClass = 'badge-flatten';
+      actionIcon = '⏰';
+      actionLabel = 'EOD RISK FLATTEN';
+    } else {
+      actionClass = 'hold';
+      badgeClass = 'badge-hold';
+      actionIcon = '👁️';
+      actionLabel = 'MONITOR & HOLD';
+    }
+
+    const conviction = d.conviction || 0;
+    const barColor = conviction >= 80 ? 'var(--accent-emerald)' : conviction >= 60 ? 'var(--accent-cyan)' : 'var(--text-dim)';
+
+    // Factors chips
+    let factorsHtml = '';
+    if (d.factors && typeof d.factors === 'object') {
+      for (const [k, v] of Object.entries(d.factors)) {
+        factorsHtml += `<span class="ai-factor-chip">${escapeHtml(v)}</span>`;
+      }
+    }
+
+    html += `
+      <div class="ai-decision-card ${actionClass}">
+        <div class="ai-decision-top">
+          <div class="ai-action-badge ${badgeClass}">
+            <span>${actionIcon}</span>
+            <span>${actionLabel}</span>
+          </div>
+          <div class="ai-conviction-meter-mini" title="4-Factor Conviction: ${conviction}%">
+            <span class="ai-conviction-score-txt">${conviction}% Conviction</span>
+            <div class="ai-conviction-bar">
+              <div class="ai-conviction-fill" style="width: ${conviction}%; background: ${barColor};"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-decision-narrative">
+          ${escapeHtml(d.details || '')}
+        </div>
+
+        ${factorsHtml ? `<div class="ai-factors-row">${factorsHtml}</div>` : ''}
+
+        <div class="ai-decision-footer">
+          <span>Ticker: <strong style="color: var(--text-main);">${escapeHtml(d.symbol || 'MARKET')}</strong></span>
+          <span>Timestamp: ${escapeHtml(d.time || '--:--:--')}</span>
+        </div>
+      </div>
+    `;
+  });
+
+  feed.innerHTML = html;
+}
+
+async function toggleAIAutoPilot() {
+  try {
+    playChime(660, 0.15);
+    const res = await fetch('/api/ai/toggle', { method: 'POST' });
+    const data = await res.json();
+    playChime(data.ai_enabled ? 990 : 440, 0.25);
+    await fetchState();
+  } catch (err) {
+    console.error("Error toggling AI Auto-Pilot:", err);
+  }
+}
+
+async function triggerAIEvaluationNow() {
+  try {
+    playChime(880, 0.2);
+    const res = await fetch('/api/ai/evaluate-now', { method: 'POST' });
+    const data = await res.json();
+    playChime(1100, 0.3);
+    await fetchState();
+    if (data.decisions && data.decisions.length > 0) {
+      const executed = data.decisions.find(d => d.status === 'EXECUTED');
+      if (executed) {
+        alert(`AI Autonomous Action Executed!\n${executed.action}: ${executed.symbol}\n${executed.details}`);
+      }
+    }
+  } catch (err) {
+    console.error("Error evaluating AI:", err);
+  }
+}
+
+async function saveAIConfigForm(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  try {
+    playChime(750, 0.2);
+    const threshold = parseInt(document.getElementById('input-ai-threshold')?.value) || 80;
+    const auto_breakeven = document.getElementById('input-ai-breakeven')?.checked !== false;
+    const auto_flatten = document.getElementById('input-ai-flatten')?.checked !== false;
+
+    const res = await fetch('/api/ai/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        threshold,
+        auto_breakeven,
+        auto_flatten
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      playChime(1050, 0.25);
+      await fetchState();
+      alert(`AI Auto-Pilot Settings Saved!\nThreshold: ${threshold}%\nAuto-Breakeven Stop: ${auto_breakeven ? 'ON' : 'OFF'}\nAuto-Flatten EOD: ${auto_flatten ? 'ON' : 'OFF'}`);
+    }
+  } catch (err) {
+    console.error("Error saving AI config:", err);
+    alert('Error saving AI settings: ' + err.message);
   }
 }
 

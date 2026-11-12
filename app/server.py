@@ -89,6 +89,17 @@ class TraderHandler(SimpleHTTPRequestHandler):
             self._send_json(200, {"transactions": engine.transactions})
         elif path == "/api/broker/account":
             self._send_json(200, {"account": engine.broker_account})
+        elif path == "/api/ai/status":
+            self._send_json(200, {
+                "enabled": engine.ai_enabled,
+                "status": engine.ai_status,
+                "confidence_threshold": engine.ai_confidence_threshold,
+                "actions_today": engine.ai_actions_count,
+                "auto_breakeven": engine.ai_auto_breakeven_stop,
+                "auto_flatten": engine.ai_auto_flatten_eod,
+                "last_action": engine.ai_last_action,
+                "decisions": engine.ai_decisions[:25]
+            })
         else:
             self.send_error(404, "API endpoint not found")
 
@@ -183,6 +194,44 @@ class TraderHandler(SimpleHTTPRequestHandler):
             with engine.lock:
                 engine.logs.clear()
             self._send_json(200, {"success": True})
+
+        elif path == "/api/ai/toggle":
+            enabled = data.get("enabled")
+            if enabled is None:
+                enabled = not engine.ai_enabled
+            engine.set_ai_mode(enabled)
+            self._send_json(200, {"success": True, "enabled": engine.ai_enabled, "status": engine.ai_status})
+
+        elif path == "/api/ai/config":
+            thresh_val = data.get("confidence_threshold") or data.get("threshold")
+            if thresh_val is not None:
+                engine.ai_confidence_threshold = int(thresh_val)
+                engine.config["ai_confidence_threshold"] = engine.ai_confidence_threshold
+            if "auto_breakeven" in data:
+                engine.ai_auto_breakeven_stop = bool(data["auto_breakeven"])
+                engine.config["ai_auto_breakeven"] = engine.ai_auto_breakeven_stop
+            if "auto_flatten" in data:
+                engine.ai_auto_flatten_eod = bool(data["auto_flatten"])
+                engine.config["ai_auto_flatten"] = engine.ai_auto_flatten_eod
+            if "max_concurrent_positions" in data:
+                engine.ai_max_concurrent_positions = int(data["max_concurrent_positions"])
+                engine.config["ai_max_concurrent_positions"] = engine.ai_max_concurrent_positions
+            self._send_json(200, {
+                "success": True,
+                "confidence_threshold": engine.ai_confidence_threshold,
+                "auto_breakeven": engine.ai_auto_breakeven_stop,
+                "auto_flatten": engine.ai_auto_flatten_eod,
+                "max_concurrent_positions": engine.ai_max_concurrent_positions
+            })
+
+        elif path == "/api/ai/evaluate-now":
+            decisions = engine.ai_evaluate_market(engine.get_ny_clock_status())
+            self._send_json(200, {
+                "success": True,
+                "status": engine.ai_status,
+                "actions_today": engine.ai_actions_count,
+                "decisions": decisions or engine.ai_decisions[:10]
+            })
 
         else:
             self.send_error(404, "API endpoint not found")

@@ -1,33 +1,16 @@
 {
   "created_by": "trader-scanner",
-  "created_at": "2026-11-11T15:05:11Z",
-  "mode": "orb",
-  "as_of": "2026-11-11 10:05 ET",
+  "created_at": "2026-11-12T09:57:18Z",
+  "mode": "daily",
+  "as_of": null,
   "universe": 5,
-  "scanned": 1,
+  "scanned": 0,
   "failed": 0,
-  "unconfirmed": 0,
   "source": "yahoo",
-  "or_minutes": 15,
-  "interval": "5m",
   "filters": {
     "min_price": 5.0,
-    "min_volume": 0
+    "min_volume": 1000000
   },
   "note": "A scan is a list of charts that match a rule, not a list of stocks to buy.",
-  "hits": [
-    {
-      "symbol": "USDJPY=X",
-      "setups": [
-        "orb"
-      ],
-      "price": 159.74,
-      "at": "9:55 AM",
-      "bar_start": "09:50",
-      "bar_index": 4,
-      "or_high": 159.7,
-      "or_low": 159.62,
-      "pct_over": 0.02
-    }
-  ]
+  "hits": []
 }
