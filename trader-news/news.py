@@ -49,6 +49,7 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 
@@ -191,8 +192,34 @@ class Fetcher(object):
             raise NewsError("could not reach %s: %s" % (url, exc.reason))
 
 
+EXCHANGE_SUFFIXES = {
+    "T", "L", "HK", "NS", "BO", "AS", "DE", "PA", "SW", "TO", "V", "CN", "NE",
+    "AX", "KS", "KQ", "TW", "TWO", "SS", "SZ", "SI", "MI", "MC", "CO", "ST",
+    "OL", "HE", "IC", "BR", "VI", "LS", "WA", "PR", "BD", "AT", "IS", "SA",
+    "MX", "BA", "SN", "CR", "JK", "BK", "KL", "NZ", "TA", "JO", "SR", "QA",
+    "AE", "KW", "F", "BE", "DU", "HM", "MU", "SG",
+}
+
+
 def yahoo_symbol(ticker):
-    return ticker.upper().replace(".", "-")
+    s = ticker.strip().upper()
+    if "." in s and not s.startswith("^"):
+        base, suf = s.rsplit(".", 1)
+        if suf in EXCHANGE_SUFFIXES or any(ch.isdigit() for ch in base):
+            return s
+        return base + "-" + suf
+    return s
+
+
+def _is_us_sec_ticker(ticker):
+    t = ticker.strip().upper()
+    if any(c in t for c in ("=", "^", "/", "-")):
+        return False
+    if "." in t:
+        base, suf = t.rsplit(".", 1)
+        if suf in EXCHANGE_SUFFIXES or any(ch.isdigit() for ch in base):
+            return False
+    return True
 
 
 def cik_map(fetcher, state):
@@ -300,8 +327,11 @@ def parse_chart(data, ticker):
     if not price or not prev:
         raise NewsError("chart for %s has no price" % ticker)
     when = meta.get("regularMarketTime")
-    return {"ticker": ticker, "price": round(float(price), 2), "prev_close": round(float(prev), 2),
-            "pct": round((float(price) / float(prev) - 1) * 100, 2),
+    p_f = float(price)
+    prev_f = float(prev)
+    dec = 6 if p_f < 0.1 else (4 if p_f < 5.0 else 2)
+    return {"ticker": ticker, "price": round(p_f, dec), "prev_close": round(prev_f, dec),
+            "pct": round((p_f / prev_f - 1) * 100, 2),
             "time": _dt.datetime.fromtimestamp(when, _dt.timezone.utc) if when else None}
 
 
@@ -310,13 +340,14 @@ def collect_moves(fetcher, watch, errors=None):
     out = []
     for t in sorted(watch):
         name = "chart-%s.json" % t
+        ysym = urllib.parse.quote(yahoo_symbol(t), safe=".-=")
         try:
             try:
-                data = fetcher.get(CHART % ("query2", yahoo_symbol(t)), name)
+                data = fetcher.get(CHART % ("query2", ysym), name)
             except NewsError as exc:
                 if fetcher.offline or not re.search(r"HTTP (429|5\d\d)", str(exc)):
                     raise
-                data = fetcher.get(CHART % ("query1", yahoo_symbol(t)), name)
+                data = fetcher.get(CHART % ("query1", ysym), name)
             out.append(parse_chart(data, t))
         except NewsError as exc:
             if not (fetcher.offline and "no file" in str(exc)):
@@ -382,17 +413,21 @@ def collect(fetcher, watch, state, sec=True, forms=("8-K",), count=10, errors=No
     errors = [] if errors is None else errors
     items = []
     for t in sorted(watch):
+        ysym = urllib.parse.quote(yahoo_symbol(t), safe=".-=")
         try:
-            items += parse_rss(fetcher.get(YAHOO % yahoo_symbol(t), "yahoo-%s.xml" % t), t)
+            items += parse_rss(fetcher.get(YAHOO % ysym, "yahoo-%s.xml" % t), t)
         except NewsError as exc:
             errors.append("headlines for %s: %s" % (t, exc))
     if sec:
-        try:
-            ciks = cik_map(fetcher, state)
-        except NewsError as exc:
-            errors.append("SEC ticker list: %s" % exc)
-            ciks = {}
-        for t in sorted(watch):
+        us_watch = [t for t in sorted(watch) if _is_us_sec_ticker(t)]
+        ciks = {}
+        if us_watch:
+            try:
+                ciks = cik_map(fetcher, state)
+            except NewsError as exc:
+                errors.append("SEC ticker list: %s" % exc)
+                ciks = {}
+        for t in us_watch:
             cik = ciks.get(t)
             if not cik:
                 if ciks:

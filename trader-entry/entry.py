@@ -59,6 +59,7 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 UA = "Mozilla/5.0 (compatible; day-trader-skill/2.0; +https://github.com/Jakeschincariol/day-trader-skill)"
@@ -227,12 +228,28 @@ def next_open(d):
 
 # ---------------------------------------------------------------- Yahoo
 
+EXCHANGE_SUFFIXES = {
+    "T", "L", "HK", "NS", "BO", "AS", "DE", "PA", "SW", "TO", "V", "CN", "NE",
+    "AX", "KS", "KQ", "TW", "TWO", "SS", "SZ", "SI", "MI", "MC", "CO", "ST",
+    "OL", "HE", "IC", "BR", "VI", "LS", "WA", "PR", "BD", "AT", "IS", "SA",
+    "MX", "BA", "SN", "CR", "JK", "BK", "KL", "NZ", "TA", "JO", "SR", "QA",
+    "AE", "KW", "F", "BE", "DU", "HM", "MU", "SG",
+}
+
+
 def yahoo_symbol(sym):
-    return sym.upper().replace(".", "-")
+    s = sym.strip().upper()
+    if "." in s and not s.startswith("^"):
+        base, suf = s.rsplit(".", 1)
+        if suf in EXCHANGE_SUFFIXES or any(ch.isdigit() for ch in base):
+            return s
+        return base + "-" + suf
+    return s
 
 
 def chart_path(sym, rng, interval):
-    return "/v8/finance/chart/%s?range=%s&interval=%s" % (yahoo_symbol(sym), rng, interval)
+    return "/v8/finance/chart/%s?range=%s&interval=%s" % (
+        urllib.parse.quote(yahoo_symbol(sym), safe=".-="), rng, interval)
 
 
 def chart_range(day, today, interval):

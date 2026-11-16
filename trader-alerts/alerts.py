@@ -55,6 +55,7 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 UA = "Mozilla/5.0 (compatible; day-trader-skill/2.0; +https://github.com/Jakeschincariol/day-trader-skill)"
@@ -193,12 +194,32 @@ def market_status(now_utc):
 
 # ---------------------------------------------------------------- quotes
 
+EXCHANGE_SUFFIXES = {
+    "T", "L", "HK", "NS", "BO", "AS", "DE", "PA", "SW", "TO", "V", "CN", "NE",
+    "AX", "KS", "KQ", "TW", "TWO", "SS", "SZ", "SI", "MI", "MC", "CO", "ST",
+    "OL", "HE", "IC", "BR", "VI", "LS", "WA", "PR", "BD", "AT", "IS", "SA",
+    "MX", "BA", "SN", "CR", "JK", "BK", "KL", "NZ", "TA", "JO", "SR", "QA",
+    "AE", "KW", "F", "BE", "DU", "HM", "MU", "SG",
+}
+
+
+def yahoo_symbol(sym):
+    s = sym.strip().upper()
+    if "." in s and not s.startswith("^"):
+        base, suf = s.rsplit(".", 1)
+        if suf in EXCHANGE_SUFFIXES or any(ch.isdigit() for ch in base):
+            return s
+        return base + "-" + suf
+    return s
+
+
 def stooq_url(sym):
     return "https://stooq.com/q/l/?s=%s.us&f=sd2t2ohlcv&h&e=csv" % sym.lower().replace(".", "-")
 
 
 def yahoo_url(sym, host=YAHOO_HOSTS[0]):
-    return "https://%s/v8/finance/chart/%s?range=1d&interval=1d" % (host, sym.upper().replace(".", "-"))
+    ysym = urllib.parse.quote(yahoo_symbol(sym), safe=".-=")
+    return "https://%s/v8/finance/chart/%s?range=1d&interval=1d" % (host, ysym)
 
 
 def parse_stooq(text, sym):

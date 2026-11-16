@@ -185,9 +185,28 @@ def clock24(minutes):
 
 # ---------------------------------------------------------------- data
 
+EXCHANGE_SUFFIXES = {
+    "T", "L", "HK", "NS", "BO", "AS", "DE", "PA", "SW", "TO", "V", "CN", "NE",
+    "AX", "KS", "KQ", "TW", "TWO", "SS", "SZ", "SI", "MI", "MC", "CO", "ST",
+    "OL", "HE", "IC", "BR", "VI", "LS", "WA", "PR", "BD", "AT", "IS", "SA",
+    "MX", "BA", "SN", "CR", "JK", "BK", "KL", "NZ", "TA", "JO", "SR", "QA",
+    "AE", "KW", "F", "BE", "DU", "HM", "MU", "SG",
+}
+
+
+def yahoo_symbol(sym):
+    s = sym.strip().upper()
+    if "." in s and not s.startswith("^"):
+        base, suf = s.rsplit(".", 1)
+        if suf in EXCHANGE_SUFFIXES or any(ch.isdigit() for ch in base):
+            return s
+        return base + "-" + suf
+    return s
+
+
 def chart_url(sym, host="query2"):
     return "https://%s.finance.yahoo.com/v8/finance/chart/%s?range=60d&interval=5m" % (
-        host, urllib.parse.quote(sym.upper().replace(".", "-")))
+        host, urllib.parse.quote(yahoo_symbol(sym)))
 
 
 def _sleep(seconds):
@@ -531,7 +550,7 @@ def load_plan(a, now_utc):
 def normalize_plan(raw, src="flags"):
     """A plan dict (trader/plan.json shape) -> the checked plan the time machine runs."""
     sym = str(raw.get("symbol") or "").strip().upper()
-    if not re.match(r"^[A-Z][A-Z0-9.\-]{0,9}$", sym):
+    if not re.match(r"^[A-Z0-9^][A-Z0-9.\-=^]{0,19}$", sym):
         raise TMError("the plan needs a ticker symbol, got %r" % raw.get("symbol"))
     side = str(raw.get("side") or "buy").lower()
     if side not in ("buy", "sell"):
@@ -686,7 +705,7 @@ def time_machine(text, plan, now_utc, replays=10000, seed=19, window=2, until=No
     result = chart_result(text, sym)
     meta, bars, dropped = parse_bars(result, now_utc)
     msym = str(meta.get("symbol") or "").upper()
-    if msym and msym != sym.replace(".", "-"):
+    if msym and msym != yahoo_symbol(sym):
         raise TMError("the data is for %s but the plan is for %s" % (msym, sym))
     gran = meta.get("dataGranularity")
     if gran and gran != "5m":

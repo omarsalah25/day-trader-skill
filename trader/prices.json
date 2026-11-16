@@ -1,0 +1,478 @@
+{
+  "as_of": "2026-11-16T15:16:53Z",
+  "source": "yahoo",
+  "note": "Delayed quotes for alerts and sizing checks. Your broker's price is the one that fills. detail.fetched is when each price was read.",
+  "prices": {
+    "IWM": 274.51,
+    "META": 624.55,
+    "TLT": 79.63,
+    "QQQ": 665.84,
+    "SOL-USD": 70.34,
+    "XRP-USD": 0.9473,
+    "DOGE-USD": 0.0584,
+    "SMH": 466.69,
+    "ETH-USD": 1811.26,
+    "AAPL": 354.04,
+    "BRK.B": 592.73,
+    "GOOGL": 287.15,
+    "SPY": 745.16,
+    "PLTR": 162.19,
+    "TSLA": 377.28,
+    "AMZN": 259.77,
+    "BTC-USD": 64301.16,
+    "MSFT": 519.7,
+    "NVDA": 160.35,
+    "AMD": 510.48,
+    "RY.TO": 287.41,
+    "ASML.AS": 1292.8,
+    "0700.HK": 390.4,
+    "SAP.DE": 212.6,
+    "CL=F": 86.56,
+    "AZN.L": 14148.0,
+    "NQ=F": 27421.5,
+    "USDJPY=X": 159.46,
+    "GC=F": 3883.6,
+    "ES=F": 7490.75,
+    "RELIANCE.NS": 1344.8,
+    "UUP": 29.51,
+    "7203.T": 3428.0,
+    "AUDUSD=X": 0.6749,
+    "NG=F": 3.15,
+    "FXE": 101.63,
+    "GLD": 354.68,
+    "GBPUSD=X": 1.3196,
+    "EURUSD=X": 1.1016,
+    "SI=F": 46.95,
+    "^GSPC": 7460.14,
+    "^IXIC": 24616.22,
+    "TSM": 374.9,
+    "^N225": 59662.02,
+    "^VIX": 21.33,
+    "^FTSE": 10936.02,
+    "ABNB": 186.79,
+    "ABBV": 298.08,
+    "ADT": 9.91,
+    "APP": 412.17,
+    "BAC": 50.45,
+    "BEKE": 18.84,
+    "BHC": 8.46,
+    "CBRS": 99.09,
+    "BZ": 12.96,
+    "CAG": 15.2,
+    "CELH": 33.1,
+    "CDNL": 6.0,
+    "CMCSA": 25.7,
+    "CL": 101.27,
+    "CHYM": 34.16,
+    "CMG": 35.84,
+    "CPB": 23.91,
+    "CPRT": 32.17,
+    "COLD": 16.77,
+    "CTVA": 9.07,
+    "DECK": 84.79
+  },
+  "detail": {
+    "IWM": {
+      "prev_close": 277.54,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "META": {
+      "prev_close": 641.69,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "TLT": {
+      "prev_close": 79.38,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "QQQ": {
+      "prev_close": 679.89,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "SOL-USD": {
+      "prev_close": 72.69,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "XRP-USD": {
+      "prev_close": 0.9745,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "DOGE-USD": {
+      "prev_close": 0.0599,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "SMH": {
+      "prev_close": 486.75,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "ETH-USD": {
+      "prev_close": 1835.29,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "AAPL": {
+      "prev_close": 356.27,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "BRK.B": {
+      "prev_close": 592.94,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "GOOGL": {
+      "prev_close": 295.77,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "SPY": {
+      "prev_close": 754.37,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "PLTR": {
+      "prev_close": 167.99,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "TSLA": {
+      "prev_close": 390.22,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "AMZN": {
+      "prev_close": 266.66,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "BTC-USD": {
+      "prev_close": 65314.55,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "MSFT": {
+      "prev_close": 523.88,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "NVDA": {
+      "prev_close": 162.85,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "AMD": {
+      "prev_close": 534.06,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "RY.TO": {
+      "prev_close": 288.37,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "ASML.AS": {
+      "prev_close": 1338.8,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "0700.HK": {
+      "prev_close": 386.6,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "SAP.DE": {
+      "prev_close": 213.45,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "CL=F": {
+      "prev_close": 88.56,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "AZN.L": {
+      "prev_close": 13982.0,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "NQ=F": {
+      "prev_close": 28034.75,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "USDJPY=X": {
+      "prev_close": 159.69,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "GC=F": {
+      "prev_close": 3886.3,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "ES=F": {
+      "prev_close": 7583.0,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "RELIANCE.NS": {
+      "prev_close": 1339.7,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "UUP": {
+      "prev_close": 29.5,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "7203.T": {
+      "prev_close": 3418.0,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "AUDUSD=X": {
+      "prev_close": 0.6774,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "NG=F": {
+      "prev_close": 3.23,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "FXE": {
+      "prev_close": 101.71,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "GLD": {
+      "prev_close": 355.45,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "GBPUSD=X": {
+      "prev_close": 1.3209,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "EURUSD=X": {
+      "prev_close": 1.1028,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "SI=F": {
+      "prev_close": 49.12,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "^GSPC": {
+      "prev_close": 7561.67,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "^IXIC": {
+      "prev_close": 25136.27,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "TSM": {
+      "prev_close": 398.73,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "^N225": {
+      "prev_close": 61142.35,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "^VIX": {
+      "prev_close": 19.3,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "^FTSE": {
+      "prev_close": 10902.56,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "ABNB": {
+      "prev_close": 186.78,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "ABBV": {
+      "prev_close": 295.03,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "ADT": {
+      "prev_close": 9.9,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "APP": {
+      "prev_close": 409.1,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "BAC": {
+      "prev_close": 51.02,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "BEKE": {
+      "prev_close": 17.86,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "BHC": {
+      "prev_close": 8.35,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "CBRS": {
+      "prev_close": 108.72,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "BZ": {
+      "prev_close": 12.96,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "CAG": {
+      "prev_close": 14.73,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "CELH": {
+      "prev_close": 32.42,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "CDNL": {
+      "prev_close": 6.46,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "CMCSA": {
+      "prev_close": 25.16,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "CL": {
+      "prev_close": 99.67,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "CHYM": {
+      "prev_close": 33.55,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "CMG": {
+      "prev_close": 35.28,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "CPB": {
+      "prev_close": 22.77,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "CPRT": {
+      "prev_close": 31.83,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "COLD": {
+      "prev_close": 16.69,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "CTVA": {
+      "prev_close": 9.43,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    },
+    "DECK": {
+      "prev_close": 86.82,
+      "time": "2026-11-16T15:16:53Z",
+      "source": "yahoo",
+      "fetched": "2026-11-16T15:16:53Z"
+    }
+  }
+}

@@ -1,16 +1,276 @@
 {
   "created_by": "trader-scanner",
-  "created_at": "2026-11-12T09:57:18Z",
-  "mode": "daily",
-  "as_of": null,
-  "universe": 5,
-  "scanned": 0,
+  "created_at": "2026-11-16T15:16:03Z",
+  "mode": "multi_market",
+  "as_of": "2026-11-16 10:15:25 ET",
+  "universe": 5930,
+  "scanned": 146,
   "failed": 0,
   "source": "yahoo",
-  "filters": {
-    "min_price": 5.0,
-    "min_volume": 1000000
-  },
-  "note": "A scan is a list of charts that match a rule, not a list of stocks to buy.",
-  "hits": []
+  "hits": [
+    {
+      "symbol": "NVDA",
+      "setups": [
+        "oversold"
+      ],
+      "price": 160.07
+    },
+    {
+      "symbol": "AAPL",
+      "setups": [
+        "breakout_20d"
+      ],
+      "price": 354.08
+    },
+    {
+      "symbol": "AMD",
+      "setups": [
+        "intraday_break"
+      ],
+      "price": 510.98
+    },
+    {
+      "symbol": "BRK.B",
+      "setups": [
+        "breakout_20d"
+      ],
+      "price": 593.0
+    },
+    {
+      "symbol": "SMH",
+      "setups": [
+        "intraday_break"
+      ],
+      "price": 466.26
+    },
+    {
+      "symbol": "TLT",
+      "setups": [
+        "intraday_break"
+      ],
+      "price": 79.65
+    },
+    {
+      "symbol": "USDJPY=X",
+      "setups": [
+        "breakout_20d"
+      ],
+      "price": 159.49
+    },
+    {
+      "symbol": "UUP",
+      "setups": [
+        "breakout_20d"
+      ],
+      "price": 29.52
+    },
+    {
+      "symbol": "FXE",
+      "setups": [
+        "intraday_break"
+      ],
+      "price": 101.63
+    },
+    {
+      "symbol": "GC=F",
+      "setups": [
+        "intraday_break"
+      ],
+      "price": 3882.8
+    },
+    {
+      "symbol": "NG=F",
+      "setups": [
+        "bull_flag"
+      ],
+      "price": 3.15
+    },
+    {
+      "symbol": "7203.T",
+      "setups": [
+        "intraday_break"
+      ],
+      "price": 3428.0
+    },
+    {
+      "symbol": "0700.HK",
+      "setups": [
+        "intraday_break"
+      ],
+      "price": 390.4
+    },
+    {
+      "symbol": "AZN.L",
+      "setups": [
+        "intraday_break"
+      ],
+      "price": 14158.0
+    },
+    {
+      "symbol": "RELIANCE.NS",
+      "setups": [
+        "breakout_20d",
+        "bull_flag"
+      ],
+      "price": 1344.8
+    },
+    {
+      "symbol": "^VIX",
+      "setups": [
+        "intraday_break"
+      ],
+      "price": 21.37
+    },
+    {
+      "symbol": "^FTSE",
+      "setups": [
+        "breakout_20d"
+      ],
+      "price": 10935.24
+    },
+    {
+      "symbol": "AAPL",
+      "setups": [
+        "breakout_20d"
+      ],
+      "price": 356.27
+    },
+    {
+      "symbol": "CBRS",
+      "setups": [
+        "reclaim_ma20"
+      ],
+      "price": 108.72
+    },
+    {
+      "symbol": "APP",
+      "setups": [
+        "bull_flag"
+      ],
+      "price": 409.1
+    },
+    {
+      "symbol": "ABNB",
+      "setups": [
+        "bull_flag"
+      ],
+      "price": 186.78
+    },
+    {
+      "symbol": "ABBV",
+      "setups": [
+        "breakout_20d"
+      ],
+      "price": 295.03
+    },
+    {
+      "symbol": "BAC",
+      "setups": [
+        "reclaim_ma20"
+      ],
+      "price": 51.02
+    },
+    {
+      "symbol": "CMCSA",
+      "setups": [
+        "breakout_20d"
+      ],
+      "price": 25.16
+    },
+    {
+      "symbol": "CL",
+      "setups": [
+        "breakout_20d"
+      ],
+      "price": 99.67
+    },
+    {
+      "symbol": "CHYM",
+      "setups": [
+        "breakout_20d"
+      ],
+      "price": 33.55
+    },
+    {
+      "symbol": "CMG",
+      "setups": [
+        "bull_flag"
+      ],
+      "price": 35.28
+    },
+    {
+      "symbol": "DECK",
+      "setups": [
+        "reclaim_ma20"
+      ],
+      "price": 86.82
+    },
+    {
+      "symbol": "CELH",
+      "setups": [
+        "bull_flag"
+      ],
+      "price": 32.42
+    },
+    {
+      "symbol": "CPB",
+      "setups": [
+        "bull_flag"
+      ],
+      "price": 22.77
+    },
+    {
+      "symbol": "ADT",
+      "setups": [
+        "bull_flag"
+      ],
+      "price": 9.9
+    },
+    {
+      "symbol": "BEKE",
+      "setups": [
+        "bull_flag",
+        "reclaim_ma20"
+      ],
+      "price": 17.86
+    },
+    {
+      "symbol": "CPRT",
+      "setups": [
+        "bull_flag"
+      ],
+      "price": 31.83
+    },
+    {
+      "symbol": "BZ",
+      "setups": [
+        "oversold",
+        "oversold_bounce"
+      ],
+      "price": 12.96
+    },
+    {
+      "symbol": "COLD",
+      "setups": [
+        "breakout_20d",
+        "bull_flag"
+      ],
+      "price": 16.69
+    },
+    {
+      "symbol": "CAG",
+      "setups": [
+        "reclaim_ma20"
+      ],
+      "price": 14.73
+    },
+    {
+      "symbol": "CTVA",
+      "setups": [
+        "oversold",
+        "oversold_bounce"
+      ],
+      "price": 9.43
+    }
+  ]
 }

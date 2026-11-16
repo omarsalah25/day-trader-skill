@@ -51,6 +51,87 @@ async function fetchState() {
   }
 }
 
+function numOr(v, d) {
+  if (v === '' || v === null || v === undefined) return d;
+  const n = Number(v);
+  return Number.isNaN(n) ? d : n;
+}
+
+function priceDecimals(sym = '', price = null) {
+  const s = String(sym || '').toUpperCase();
+  const isSpotForex = s.includes('=X') || ['EURUSD', 'GBPUSD', 'AUDUSD', 'USDCAD', 'USDJPY', 'USDCHF', 'EUR/USD', 'GBP/USD'].includes(s);
+  if (isSpotForex) return s.includes('JPY') ? 3 : 4;
+  if (price !== null && price !== undefined && !Number.isNaN(Number(price))) {
+    const p = Math.abs(Number(price));
+    if (p > 0 && p < 0.01) return 6;
+    if (p > 0 && p < 2) return 4;
+  }
+  return 2;
+}
+
+function formatPrice(val, sym = '') {
+  if (val === null || val === undefined || Number.isNaN(Number(val))) return '--';
+  const s = String(sym || '').toUpperCase();
+  const dec = priceDecimals(s, val);
+  const formatted = Number(val).toFixed(dec);
+  if (s.includes('=X') || s.startsWith('^')) return formatted;
+  return '$' + formatted;
+}
+
+function formatQty(q) {
+  const n = Number(q);
+  if (Number.isNaN(n) || n <= 0) return '0';
+  if (n >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  if (Number.isInteger(n)) return String(n);
+  return n < 0.1 ? n.toFixed(6).replace(/0+$/, '').replace(/\.$/, '') : n.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+}
+
+function assetBadgeClass(assetClass) {
+  const c = String(assetClass || '').toLowerCase();
+  if (c.includes('crypto')) return 'asset-crypto';
+  if (c.includes('forex') || c === 'fx') return 'asset-forex';
+  if (c.includes('future') || c.includes('commodity')) return 'asset-futures';
+  if (c.includes('index')) return 'asset-index';
+  if (c.includes('intl')) return 'asset-intl';
+  return 'asset-us';
+}
+
+function renderGlobalSessions(sessions) {
+  const el = document.getElementById('global-sessions-pills');
+  if (!el || !sessions) return;
+  const order = [
+    ['crypto', '₿'],
+    ['forex', '💱'],
+    ['futures', '🛢️'],
+    ['us', '🇺🇸'],
+    ['europe', '🇪🇺'],
+    ['asia', '🌏'],
+  ];
+  el.innerHTML = order.map(([key, icon]) => {
+    const info = sessions[key];
+    if (!info) return '';
+    const isOpen = !!info.open;
+    return `<span class="session-chip ${isOpen ? 'open' : ''}" title="${escapeHtml(info.label || '')}">${icon} ${escapeHtml(info.name || key)}: ${isOpen ? 'OPEN' : 'CLOSED'}</span>`;
+  }).join('');
+}
+
+function renderSkillsTelemetry(telemetry) {
+  if (!telemetry) return;
+  Object.entries(telemetry).forEach(([skillKey, info]) => {
+    const node = document.getElementById(`node-${skillKey}`);
+    const statusEl = document.getElementById(`node-${skillKey}-status`);
+    if (statusEl && info && info.detail) {
+      statusEl.textContent = info.detail;
+    }
+    if (node && info) {
+      node.classList.toggle('active', info.status === 'ACTIVE' || info.status === 'PASSED' || info.status === 'READY');
+    }
+    if (statusEl && info) {
+      statusEl.classList.toggle('status-pass', info.status === 'PASSED' || info.status === 'ACTIVE');
+    }
+  });
+}
+
 // Render UI Components
 function renderState(s) {
   // 1. Clock & Market Session
@@ -67,6 +148,7 @@ function renderState(s) {
       sessionText.style.color = '#f59e0b';
     }
   }
+  renderGlobalSessions(s.global_sessions || (s.ny_clock && s.ny_clock.global_sessions));
 
   // 2. Engine Status & Mode
   const isRunning = s.running;
@@ -93,11 +175,27 @@ function renderState(s) {
   document.getElementById('kpi-countdown').textContent = isRunning ? `${s.next_cycle_in || 0}s` : 'PAUSED';
   document.getElementById('kpi-cycles').textContent = `Total Cycles: ${s.cycle_count || 0}`;
 
+  // Capital & Buying Power KPI
+  const acct = s.broker_account || {};
+  const cfg = s.config || {};
+  const portVal = acct.portfolio_value != null ? acct.portfolio_value : (cfg.budget || 5000);
+  const bpVal = acct.buying_power != null ? acct.buying_power : portVal;
+  const riskTrade = cfg.max_loss_per_trade_usd != null ? cfg.max_loss_per_trade_usd : 50;
+  const capEl = document.getElementById('kpi-capital-val');
+  const capModeEl = document.getElementById('kpi-capital-mode');
+  const capSubEl = document.getElementById('kpi-capital-sub');
+  if (capEl) capEl.textContent = `$${Number(portVal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (capModeEl) capModeEl.textContent = cfg.paper === false ? 'Live' : 'Paper';
+  if (capSubEl) capSubEl.textContent = `Buying Power: $${Number(bpVal).toLocaleString(undefined, { maximumFractionDigits: 0 })} | Risk: $${Number(riskTrade).toFixed(0)}`;
+
   // Mode buttons
   document.getElementById('btn-mode-sim').classList.toggle('active', s.mode === 'simulation');
   document.getElementById('btn-mode-live').classList.toggle('active', s.mode === 'live');
   document.getElementById('footer-status-text').textContent =
-    `Engine 24/7 running continuously in ${s.mode === 'simulation' ? 'Simulation / Replay' : 'Live Market'} Mode`;
+    `Engine 24/7 running continuously in ${s.mode === 'simulation' ? 'Simulation / Replay' : 'Live Market'} Mode | All Markets Active`;
+
+  // Skills Pipeline Telemetry
+  renderSkillsTelemetry(s.skills_telemetry);
 
   // 3. Watchlist Table
   renderWatchlist(s);
@@ -134,7 +232,7 @@ function renderState(s) {
   // Audio trigger on new cycle completion
   if (lastCycleCount !== -1 && s.cycle_count > lastCycleCount) {
     if (s.triggered_alerts && s.triggered_alerts.length > 0) {
-      playChime(1050, 0.35); // Alert chord
+      playChime(1050, 0.35);
     }
   }
   lastCycleCount = s.cycle_count;
@@ -146,7 +244,7 @@ function renderWatchlist(s) {
   const trigEl = document.getElementById('kpi-triggered-count');
 
   const watchlist = s.watchlist || [];
-  countEl.textContent = watchlist.length;
+  if (countEl) countEl.textContent = watchlist.length;
 
   let triggeredCount = 0;
   const scanHits = (s.scans && s.scans.hits) ? s.scans.hits : [];
@@ -155,39 +253,93 @@ function renderWatchlist(s) {
     hitMap[h.symbol] = h;
     if (h.status === 'TRIGGERED') triggeredCount++;
   });
-  trigEl.textContent = `${triggeredCount} Triggered`;
+  if (trigEl) trigEl.textContent = `${triggeredCount} Triggered`;
 
+  // Universe Progress KPI & Table
+  const uniTotal = (s.scans && s.scans.universe_total) || 5930;
+  const uniScanned = (s.scans && s.scans.universe_scanned) || 0;
+  const uniHits = s.universe_hits || (s.scans && s.scans.universe_hits) || [];
+  const uniSubEl = document.getElementById('kpi-universe-progress');
+  const uniBadgeEl = document.getElementById('universe-progress-badge');
+  if (uniSubEl) uniSubEl.textContent = `${uniScanned.toLocaleString()} / ${uniTotal.toLocaleString()} US Cos (${uniHits.length} Hits)`;
+  if (uniBadgeEl) uniBadgeEl.textContent = `${uniScanned.toLocaleString()} / ${uniTotal.toLocaleString()} Scanned`;
+
+  const uniTbody = document.getElementById('universe-hits-tbody');
+  if (uniTbody) {
+    if (uniHits.length === 0) {
+      uniTbody.innerHTML = '<tr><td colspan="6" class="text-muted">Click "Sweep 500 US Cos" or wait for rotating background scan to discover full-market breakouts.</td></tr>';
+    } else {
+      uniTbody.innerHTML = uniHits.slice(0, 40).map(u => {
+        const uSym = escapeHtml(u.symbol || '');
+        const uPrice = u.price != null ? formatPrice(u.price, u.symbol) : '--';
+        const setups = escapeHtml(u.setups || u.setup || 'SCAN_HIT');
+        const rsi = u.rsi != null ? `RSI ${Number(u.rsi).toFixed(1)}` : '-';
+        const vol = u.volume != null ? Number(u.volume).toLocaleString() : '-';
+        return `
+          <tr>
+            <td><strong>${uSym}</strong></td>
+            <td>${uPrice}</td>
+            <td><span class="status-badge status-triggered">${setups}</span></td>
+            <td>${escapeHtml(rsi)}</td>
+            <td>${vol}</td>
+            <td>
+              <div class="action-btn-group">
+                <button class="btn btn-primary btn-xs" onclick="quickTradeSymbol('${uSym}')">Trade</button>
+                <button class="btn btn-secondary btn-xs" onclick="addSymbolDirect('${uSym}')">+ Watch</button>
+                <button class="btn btn-secondary btn-xs" onclick="openAnalystModal('${uSym}')">Analyze</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+
+  if (!tbody) return;
   tbody.innerHTML = '';
   watchlist.forEach(sym => {
-    const isSpotForex = sym.includes('=X') || ['EURUSD', 'GBPUSD', 'AUDUSD', 'USDCAD', 'USDJPY', 'USDCHF'].includes(sym);
-    const isJpy = sym.includes('JPY');
-    const dec = (isSpotForex && !isJpy) ? 4 : 2;
-
-    const q = (s.quotes && s.quotes[sym]) ? s.quotes[sym] : { price: (isSpotForex ? 1.1091 : 364.18), change: '+0.55%' };
+    const q = (s.quotes && s.quotes[sym]) ? s.quotes[sym] : {};
     const hit = hitMap[sym];
+    const assetInfo = q.asset || (hit && hit.asset) || { asset_class: 'us_equity', badge: 'US Equity' };
+    const priceNumVal = q.price != null ? q.price : (hit && hit.price != null ? hit.price : null);
+
     const isTriggered = hit && hit.status === 'TRIGGERED';
     const isWaiting = hit && hit.status === 'WAITING';
-
     const statusBadge = isTriggered
       ? '<span class="status-badge status-triggered">TRIGGERED</span>'
       : (isWaiting ? '<span class="status-badge status-waiting">WAITING</span>' : '<span class="status-badge">MONITORING</span>');
 
-    const lowStr = (hit && hit.or_low != null) ? Number(hit.or_low).toFixed(dec) : (q && q.price != null ? (Number(q.price) * 0.995).toFixed(dec) : '354.47');
-    const highStr = (hit && hit.or_high != null) ? Number(hit.or_high).toFixed(dec) : (q && q.price != null ? (Number(q.price) * 1.005).toFixed(dec) : '362.18');
-    const rangeStr = `$${lowStr} - $${highStr}`;
-    const volStr = (hit && hit.vol_x != null) ? `${Number(hit.vol_x).toFixed(1)}x` : '1.2x';
-    const priceNum = (q && q.price != null) ? Number(q.price).toFixed(dec) : '364.18';
+    const lowStr = (hit && hit.or_low != null) ? formatPrice(hit.or_low, sym) : (priceNumVal != null ? formatPrice(Number(priceNumVal) * 0.995, sym) : '--');
+    const highStr = (hit && hit.or_high != null) ? formatPrice(hit.or_high, sym) : (priceNumVal != null ? formatPrice(Number(priceNumVal) * 1.005, sym) : '--');
+    const rangeStr = `${lowStr} - ${highStr}`;
+    const volStr = (hit && hit.vol_x != null) ? `${Number(hit.vol_x).toFixed(1)}x` : '--';
+
+    let chgPct = q.change;
+    if (!chgPct && q.change_pct != null) {
+      const n = Number(q.change_pct);
+      chgPct = `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
+    }
+    chgPct = chgPct || '+0.00%';
+    const symEsc = escapeHtml(sym);
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><span class="sym-badge ${isSpotForex ? 'sym-forex' : ''}">${sym}</span></td>
-      <td><strong>$${priceNum}</strong></td>
-      <td class="${(q.change || '').startsWith('-') ? 'text-rose' : 'text-emerald'}">${q.change || '+0.00%'}</td>
+      <td>
+        <span class="sym-badge ${assetInfo.asset_class === 'forex' ? 'sym-forex' : ''}" title="${escapeHtml(q.name || sym)}">${symEsc}</span>
+      </td>
+      <td><span class="asset-badge ${assetBadgeClass(assetInfo.asset_class)}">${escapeHtml(assetInfo.badge || 'US Equity')}</span></td>
+      <td><strong>${formatPrice(priceNumVal, sym)}</strong></td>
+      <td class="${String(chgPct).startsWith('-') ? 'text-rose' : 'text-emerald'}">${escapeHtml(chgPct)}</td>
       <td>${rangeStr}</td>
       <td>${statusBadge}</td>
       <td>${volStr}</td>
       <td>
-        <button class="btn btn-secondary btn-sm" onclick="removeSymbol('${sym}')" title="Remove from watchlist">Remove</button>
+        <div class="action-btn-group">
+          <button class="btn btn-primary btn-xs" onclick="quickTradeSymbol('${symEsc}')" title="Execute order now">Trade</button>
+          <button class="btn btn-secondary btn-xs" onclick="openAnalystModal('${symEsc}')" title="Fundamentals & Quote">Analyze</button>
+          <button class="btn btn-secondary btn-xs" onclick="runTimeMachineSymbolDirect('${symEsc}')" title="Run 10,000 replays">Sim</button>
+          <button class="btn btn-secondary btn-xs" onclick="removeSymbol('${symEsc}')" title="Remove from watchlist">✕</button>
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
@@ -197,6 +349,9 @@ function renderWatchlist(s) {
 function renderTimeMachine(s) {
   const tm = s.timemachine;
   if (!tm) return;
+
+  const symLabel = document.getElementById('tm-target-symbol-label');
+  if (symLabel) symLabel.textContent = tm.symbol || (s.plan && s.plan.symbol) || 'Active Setup';
 
   const mc = tm.mc || tm.sim || {};
   const targetPct = mc.p_target !== undefined ? mc.p_target * 100 : (mc.target_first_pct ?? 29.4);
@@ -215,17 +370,24 @@ function renderTimeMachine(s) {
   if (openEl) openEl.textContent = `${Number(openPct).toFixed(1)}%`;
   if (greenEl) greenEl.textContent = `${Number(greenPct).toFixed(1)}%`;
 
+  const barT = document.querySelector('.bar-slice.bar-target');
+  const barO = document.querySelector('.bar-slice.bar-open');
+  const barS = document.querySelector('.bar-slice.bar-stop');
+  if (barT) barT.style.width = `${Number(targetPct).toFixed(1)}%`;
+  if (barO) barO.style.width = `${Number(openPct).toFixed(1)}%`;
+  if (barS) barS.style.width = `${Number(stopPct).toFixed(1)}%`;
+
   if (legendEl) {
     legendEl.textContent = `Target ${Number(targetPct).toFixed(1)}% | Stop ${Number(stopPct).toFixed(1)}% | Open ${Number(openPct).toFixed(1)}%`;
   }
 
   const hist = tm.history;
   if (hist) {
-    const fired = Number(hist.triggered ?? hist.fired ?? 33);
-    const target = Number(hist.target ?? 13);
-    const stop = Number(hist.stop ?? 15);
-    const neither = Number(hist.close ?? hist.neither ?? 5);
-    const avgR = Number(hist.avg_R ?? hist.avg_r ?? -0.062);
+    const fired = Number(hist.triggered ?? hist.fired ?? 0);
+    const target = Number(hist.target ?? 0);
+    const stop = Number(hist.stop ?? 0);
+    const neither = Number(hist.close ?? hist.neither ?? 0);
+    const avgR = Number(hist.avg_R ?? hist.avg_r ?? 0);
 
     const histFiredEl = document.getElementById('hist-fired');
     const histTargetEl = document.getElementById('hist-target');
@@ -234,9 +396,9 @@ function renderTimeMachine(s) {
     const histAvgREl = document.getElementById('hist-avg-r');
 
     if (histFiredEl) histFiredEl.textContent = `${fired} times`;
-    if (histTargetEl) histTargetEl.textContent = `${target} times (${fired ? ((target / fired) * 100).toFixed(1) : '39.4'}%)`;
-    if (histStopEl) histStopEl.textContent = `${stop} times (${fired ? ((stop / fired) * 100).toFixed(1) : '45.5'}%)`;
-    if (histNeitherEl) histNeitherEl.textContent = `${neither} times (${fired ? ((neither / fired) * 100).toFixed(1) : '15.1'}%)`;
+    if (histTargetEl) histTargetEl.textContent = `${target} times (${fired ? ((target / fired) * 100).toFixed(1) : '0.0'}%)`;
+    if (histStopEl) histStopEl.textContent = `${stop} times (${fired ? ((stop / fired) * 100).toFixed(1) : '0.0'}%)`;
+    if (histNeitherEl) histNeitherEl.textContent = `${neither} times (${fired ? ((neither / fired) * 100).toFixed(1) : '0.0'}%)`;
     if (histAvgREl) histAvgREl.textContent = `${avgR >= 0 ? '+' : ''}${avgR.toFixed(3)} R`;
   }
 }
@@ -245,26 +407,20 @@ function renderOrders(s) {
   const p = s.plan;
   const o = s.orders;
   if (p) {
-    const isSpotForex = (p.symbol || '').includes('=X') || ['EURUSD', 'GBPUSD', 'AUDUSD', 'USDCAD', 'USDJPY', 'USDCHF'].includes(p.symbol || '');
-    const isJpy = (p.symbol || '').includes('JPY');
-    const dec = (isSpotForex && !isJpy) ? 4 : 2;
-
-    const entryStr = p.entry != null ? Number(p.entry).toFixed(dec) : '364.18';
-    const stopStr = p.stop != null ? Number(p.stop).toFixed(dec) : '358.32';
-    const targetStr = p.target != null ? Number(p.target).toFixed(dec) : '370.04';
-    const riskShareStr = p.risk_per_share != null ? Number(p.risk_per_share).toFixed(dec) : '5.86';
-
+    const sym = p.symbol || 'TSLA';
     const symEl = document.getElementById('ticket-sym');
     const entryEl = document.getElementById('ticket-entry');
     const stopEl = document.getElementById('ticket-stop');
     const targetEl = document.getElementById('ticket-target');
     const riskShareEl = document.getElementById('ticket-risk-share');
+    const assetTagEl = document.getElementById('ticket-asset-tag');
 
-    if (symEl) symEl.textContent = p.symbol || 'TSLA';
-    if (entryEl) entryEl.textContent = `$${entryStr}`;
-    if (stopEl) stopEl.textContent = `$${stopStr}`;
-    if (targetEl) targetEl.textContent = `$${targetStr}`;
-    if (riskShareEl) riskShareEl.textContent = `$${riskShareStr}`;
+    if (symEl) symEl.textContent = sym;
+    if (entryEl) entryEl.textContent = p.entry != null ? formatPrice(p.entry, sym) : '--';
+    if (stopEl) stopEl.textContent = p.stop != null ? formatPrice(p.stop, sym) : '--';
+    if (targetEl) targetEl.textContent = p.target != null ? formatPrice(p.target, sym) : '--';
+    if (riskShareEl) riskShareEl.textContent = p.risk_per_share != null ? formatPrice(p.risk_per_share, sym) : '--';
+    if (assetTagEl && p.asset && p.asset.badge) assetTagEl.textContent = p.asset.badge;
   }
 
   if (o && o.orders && o.orders.length > 0) {
@@ -275,10 +431,12 @@ function renderOrders(s) {
 
     const maxLossVal = (firstOrder.plan && firstOrder.plan.max_loss != null)
       ? Number(firstOrder.plan.max_loss).toFixed(2)
-      : '46.88';
+      : '50.00';
 
-    const qtyNum = parseInt(firstOrder.qty) || 8;
-    const qtyLabel = qtyNum >= 1000 ? `${qtyNum.toLocaleString()} Units` : `${qtyNum} Shares`;
+    const qtyNum = Number(firstOrder.qty) || 1;
+    const sym = firstOrder.symbol || (p && p.symbol) || '';
+    const unitLabel = qtyNum >= 1000 || String(sym).includes('=X') ? 'Units' : 'Shares';
+    const qtyLabel = `${formatQty(qtyNum)} ${unitLabel}`;
 
     if (qtyEl) qtyEl.textContent = qtyLabel;
     if (maxLossEl) maxLossEl.textContent = `$${maxLossVal}`;
@@ -287,15 +445,58 @@ function renderOrders(s) {
 
   // Risk Gatekeeper
   const risk = s.risk;
+  const cfg = s.config || {};
   const badge = document.getElementById('risk-audit-badge');
   const kpiBadge = document.getElementById('kpi-risk-badge');
+  const kpiRiskSub = document.getElementById('kpi-risk-sub');
 
   if (risk && risk.status === 'PASS') {
     if (badge) { badge.className = 'verdict-pill pill-pass'; badge.textContent = 'PASS'; }
     if (kpiBadge) { kpiBadge.className = 'verdict-pill pill-pass'; kpiBadge.textContent = 'PASS'; }
+    if (kpiRiskSub) kpiRiskSub.textContent = cfg.allow_unlimited_orders ? 'Unlimited + All Markets OK' : `${risk.pass || 1} Orders Cleared`;
   } else if (risk && risk.status === 'BLOCK') {
     if (badge) { badge.className = 'verdict-pill pill-block'; badge.textContent = 'BLOCK'; }
     if (kpiBadge) { kpiBadge.className = 'verdict-pill pill-block'; kpiBadge.textContent = 'BLOCK'; }
+    if (kpiRiskSub) kpiRiskSub.textContent = (risk.reasons && risk.reasons[0]) ? risk.reasons[0] : 'Blocked by Risk Rules';
+  }
+
+  const checklistEl = document.getElementById('risk-checklist');
+  if (checklistEl && risk) {
+    const items = [];
+    const passedAll = risk.status === 'PASS';
+    const isUnlim = cfg.allow_unlimited_orders || cfg.ai_unlimited_orders || Number(cfg.max_orders_per_day) === 0;
+    const isAllMkts = cfg.allow_all_markets !== false;
+    items.push({
+      ok: true,
+      title: `Order Capacity: ${isUnlim ? 'UNLIMITED (No Daily Cap)' : `${cfg.max_orders_per_day} / Day Limit`}`,
+      desc: isUnlim ? 'AI Auto-Pilot and manual execution can place unlimited concurrent and daily orders.' : 'Enforces configured daily round-trip ceiling.'
+    });
+    items.push({
+      ok: true,
+      title: `Market Scope: ${isAllMkts ? 'ALL MARKETS ENABLED' : 'US Equities Only'}`,
+      desc: 'Supports US 5,930-Co Universe, Global Intl (.T, .HK, .L, .AS), Crypto 24/7, Forex 24/5, Commodities, Indices & Options.'
+    });
+    if (Array.isArray(risk.reasons) && risk.reasons.length > 0) {
+      risk.reasons.forEach(r => items.push({ ok: false, title: 'Blocked: ' + r, desc: 'Resolve risk block before live routing.' }));
+    } else {
+      items.push({
+        ok: passedAll,
+        title: `Automated Skill Audit (trader-risk): ${risk.status || 'PASS'}`,
+        desc: risk.details || 'Mandatory stop-loss, R:R floor, and capital safety verified.'
+      });
+    }
+    if (Array.isArray(risk.warnings)) {
+      risk.warnings.slice(0, 3).forEach(w => items.push({ ok: true, title: 'Notice: ' + w, desc: 'Advisory warning from trader-risk' }));
+    }
+    checklistEl.innerHTML = items.map(it => `
+      <div class="risk-check-item ${it.ok ? 'passed' : ''}" style="${it.ok ? '' : 'border-color: rgba(244,63,94,0.4);'}">
+        <div class="risk-check-icon">${it.ok ? '✓' : '✕'}</div>
+        <div class="risk-check-content">
+          <div class="risk-check-title">${escapeHtml(it.title)}</div>
+          <div class="risk-check-desc">${escapeHtml(it.desc)}</div>
+        </div>
+      </div>
+    `).join('');
   }
 
   // Live Positions & Real-Time P&L Table
@@ -306,42 +507,41 @@ function renderOrders(s) {
     const hasKey = s.config && s.config.alpaca_api_key;
     const isPaper = !s.config || s.config.paper !== false;
     brokerPill.textContent = hasKey
-      ? `Connected: Alpaca ${isPaper ? 'Paper' : 'Live'}`
-      : 'Paper Simulator (High-Fidelity Local)';
+      ? `Connected: Alpaca ${isPaper ? 'Paper' : 'Live'} (${positions.length} Open)`
+      : `Paper Simulator (${positions.length} Open)`;
   }
 
   if (posTbody) {
     if (positions.length === 0) {
-      posTbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-dim); padding: 22px;">No active open positions. Click "🚀 Execute Order" or wait for an automated breakout fill.</td></tr>';
+      posTbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: var(--text-dim); padding: 22px;">No active open positions. Execute any ticker above or enable AI Auto-Pilot 24/7.</td></tr>';
     } else {
       posTbody.innerHTML = '';
       positions.forEach((pos) => {
         const sym = pos.symbol || 'TSLA';
-        const isSpotForex = sym.includes('=X') || ['EURUSD', 'GBPUSD', 'AUDUSD', 'USDCAD', 'USDJPY', 'USDCHF'].includes(sym);
-        const isJpy = sym.includes('JPY');
-        const dec = (isSpotForex && !isJpy) ? 4 : 2;
-
-        const quote = (s.quotes && s.quotes[sym]) ? s.quotes[sym].price : (pos.current_price || pos.entry_price);
-        const shares = pos.shares || 1;
-        const sharesDisplay = shares >= 1000 ? Number(shares).toLocaleString() : shares;
-        const entry = pos.entry_price || quote;
-        const stop = pos.stop_price || (entry * 0.98);
-        const target = pos.target_price || (entry * 1.02);
-        const pnl = (quote - entry) * shares;
-        const pnlPct = ((quote - entry) / entry) * 100;
+        const quote = (s.quotes && s.quotes[sym] && s.quotes[sym].price != null) ? s.quotes[sym].price : (pos.current_price || pos.entry_price);
+        const shares = Number(pos.shares || 1);
+        const sharesDisplay = formatQty(shares);
+        const entry = Number(pos.entry_price || quote);
+        const stop = Number(pos.stop_price || (entry * 0.98));
+        const target = Number(pos.target_price || (entry * 1.02));
+        const pnl = (pos.pnl_usd != null) ? Number(pos.pnl_usd) : ((quote - entry) * shares);
+        const pnlPct = (pos.pnl_pct != null) ? Number(pos.pnl_pct) : (entry ? (((quote - entry) / entry) * 100) : 0);
         const isProfitable = pnl >= 0;
+        const badgeLabel = pos.region || pos.asset_class || 'Market';
+        const symEsc = escapeHtml(sym);
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong>${escapeHtml(sym)}</strong></td>
+          <td><strong>${symEsc}</strong></td>
+          <td><span class="asset-badge ${assetBadgeClass(pos.asset_class)}">${escapeHtml(badgeLabel)}</span></td>
           <td>${sharesDisplay}</td>
-          <td>$${Number(entry).toFixed(dec)}</td>
-          <td>$${Number(quote).toFixed(dec)}</td>
-          <td class="text-rose">$${Number(stop).toFixed(dec)}</td>
-          <td class="text-emerald">$${Number(target).toFixed(dec)}</td>
+          <td>${formatPrice(entry, sym)}</td>
+          <td>${formatPrice(quote, sym)}</td>
+          <td class="text-rose">${formatPrice(stop, sym)}</td>
+          <td class="text-emerald">${formatPrice(target, sym)}</td>
           <td class="${isProfitable ? 'text-emerald' : 'text-rose'}"><strong>${isProfitable ? '+' : ''}$${Number(pnl).toFixed(2)}</strong></td>
           <td class="${isProfitable ? 'text-emerald' : 'text-rose'}">${isProfitable ? '+' : ''}${Number(pnlPct).toFixed(2)}%</td>
-          <td><button class="btn btn-flatten btn-sm" style="padding: 4px 10px; font-size: 11px;" onclick="emergencyFlatten()">Close</button></td>
+          <td><button class="btn btn-flatten btn-sm" style="padding: 4px 10px; font-size: 11px;" onclick="closePosition('${symEsc}')">Close</button></td>
         `;
         posTbody.appendChild(tr);
       });
@@ -355,7 +555,7 @@ function renderTransactions(s) {
   const txs = s.transactions || [];
 
   if (txs.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: var(--text-dim); padding: 22px;">No active transactions yet. Click "🚀 Execute Order" or "Submit 1m Transaction" to place a trade.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: var(--text-dim); padding: 22px;">No active transactions yet. Execute any asset or trigger AI Evaluation to place a trade.</td></tr>';
     return;
   }
 
@@ -369,12 +569,7 @@ function renderTransactions(s) {
     else if (status === 'CANCELED' || status === 'EXPIRED') statusClass = 'pill-block';
 
     const sym = tx.symbol || 'TSLA';
-    const isSpotForex = sym.includes('=X') || ['EURUSD', 'GBPUSD', 'AUDUSD', 'USDCAD', 'USDJPY', 'USDCHF'].includes(sym);
-    const isJpy = sym.includes('JPY');
-    const dec = (isSpotForex && !isJpy) ? 4 : 2;
-
-    const qtyNum = parseInt(tx.qty) || 1;
-    const qtyDisplay = qtyNum >= 1000 ? qtyNum.toLocaleString() : tx.qty;
+    const qtyDisplay = formatQty(tx.qty || 1);
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -384,10 +579,10 @@ function renderTransactions(s) {
       <td><span class="${isBuy ? 'text-emerald' : 'text-rose'}" style="font-weight: 700;">${escapeHtml(tx.side || 'BUY')}</span></td>
       <td>${escapeHtml(qtyDisplay)}</td>
       <td><span class="news-ticker" style="font-size: 10px;">${escapeHtml(tx.type || 'BRACKET')}</span></td>
-      <td class="text-rose">${tx.stop_price ? '$' + Number(tx.stop_price).toFixed(dec) : '-'}</td>
-      <td class="text-emerald">${tx.target_price ? '$' + Number(tx.target_price).toFixed(dec) : '-'}</td>
+      <td class="text-rose">${tx.stop_price ? formatPrice(tx.stop_price, sym) : '-'}</td>
+      <td class="text-emerald">${tx.target_price ? formatPrice(tx.target_price, sym) : '-'}</td>
       <td><span class="status-badge ${statusClass}" style="font-size: 10px;">${escapeHtml(status)}</span></td>
-      <td><span class="kpi-tag" style="font-size: 10px;">${escapeHtml(tx.broker || 'Alpaca Paper')}</span></td>
+      <td><span class="kpi-tag" style="font-size: 10px;">${escapeHtml(tx.broker || 'Paper')}</span></td>
       <td>
         ${status !== 'CANCELED' && status !== 'FILLED' ? `<button class="btn btn-flatten btn-sm" style="padding: 3px 8px; font-size: 10px;" onclick="cancelOrder('${escapeHtml(tx.order_id || tx.id)}')">Cancel</button>` : '-'}
       </td>
@@ -399,19 +594,24 @@ function renderTransactions(s) {
 function renderStrategyUI(cfg) {
   if (!cfg) return;
   const preset = cfg.strategy_preset || (cfg.candle_interval === '1m' ? 'fast_1m' : 'standard_5m');
+  const cardAll = document.getElementById('strat-all-markets');
   const card1m = document.getElementById('strat-fast-1m');
   const cardForex = document.getElementById('strat-forex-pip');
   const card5m = document.getElementById('strat-standard-5m');
+  const badgeAll = document.getElementById('badge-strat-all');
   const badge1m = document.getElementById('badge-strat-1m');
   const badgeForex = document.getElementById('badge-strat-forex');
   const badge5m = document.getElementById('badge-strat-5m');
 
-  [card1m, cardForex, card5m].forEach(c => c && c.classList.remove('active-strategy'));
-  [badge1m, badgeForex, badge5m].forEach(b => {
+  [cardAll, card1m, cardForex, card5m].forEach(c => c && c.classList.remove('active-strategy'));
+  [badgeAll, badge1m, badgeForex, badge5m].forEach(b => {
     if (b) { b.textContent = 'AVAILABLE'; b.className = 'status-badge'; }
   });
 
-  if (preset === 'forex_pip') {
+  if (preset === 'all_markets_24_7' || preset === 'all_markets') {
+    if (cardAll) cardAll.classList.add('active-strategy');
+    if (badgeAll) { badgeAll.textContent = 'ACTIVE SETUP'; badgeAll.className = 'status-badge status-triggered'; }
+  } else if (preset === 'forex_pip') {
     if (cardForex) cardForex.classList.add('active-strategy');
     if (badgeForex) { badgeForex.textContent = 'ACTIVE SETUP'; badgeForex.className = 'status-badge status-triggered'; }
   } else if (preset === 'fast_1m') {
@@ -423,9 +623,8 @@ function renderStrategyUI(cfg) {
   }
 }
 
-
 function escapeHtml(str) {
-  if (!str) return '';
+  if (!str && str !== 0) return '';
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -434,11 +633,27 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+let cachedNewsItems = [];
+function renderNewsFilter() {
+  renderNews({ news: cachedNewsItems });
+}
+
 function renderNews(s) {
   const listEl = document.getElementById('news-feed-list');
-  const news = s.news || [];
+  const countBadge = document.getElementById('news-count-badge');
+  const rawNews = s.news || [];
+  cachedNewsItems = rawNews;
+  const filterQ = (document.getElementById('news-filter-input')?.value || '').trim().toLowerCase();
+
+  const news = filterQ
+    ? rawNews.filter(item => JSON.stringify(item).toLowerCase().includes(filterQ))
+    : rawNews;
+
+  if (countBadge) countBadge.textContent = `${news.length} Items`;
+  if (!listEl) return;
+
   if (news.length === 0) {
-    listEl.innerHTML = '<div class="news-card"><div class="news-title">Scanning headlines...</div></div>';
+    listEl.innerHTML = '<div class="news-card"><div class="news-title">No matching headlines yet. Enter any symbol above and click "Fetch Breaking News".</div></div>';
     return;
   }
 
@@ -446,7 +661,7 @@ function renderNews(s) {
   news.forEach(item => {
     let title = '';
     let link = '';
-    let ticker = 'TSLA';
+    let ticker = 'MARKET';
     let source = 'Yahoo Finance';
     let timeStr = 'Recent';
     let summary = '';
@@ -456,12 +671,12 @@ function renderNews(s) {
       const urlMatch = item.match(/https?:\/\/[^\s]+/);
       link = urlMatch ? urlMatch[0] : 'https://finance.yahoo.com';
       title = item.replace(/https?:\/\/[^\s]+/, '').replace(/^.*?(ET\s+)/, '').trim() || item;
-      const tickMatch = item.match(/\b([A-Z]{1,5})\b/);
+      const tickMatch = item.match(/\b([A-Z0-9.\-=^]{1,12})\b/);
       if (tickMatch) ticker = tickMatch[1];
     } else {
       title = item.title || 'Market Update';
-      link = item.link || (item.ticker ? `https://finance.yahoo.com/quote/${item.ticker}/news/` : 'https://finance.yahoo.com');
       ticker = item.ticker || 'MARKET';
+      link = item.link || `https://finance.yahoo.com/quote/${encodeURIComponent(ticker)}/news/`;
       source = item.source || 'Yahoo Finance';
       timeStr = item.time ? (item.time.includes('T') ? item.time.substring(11, 16) + ' UTC' : item.time) : 'Recent';
       summary = item.summary || '';
@@ -469,12 +684,13 @@ function renderNews(s) {
     }
 
     const tagsHtml = tags.map(t => `<span class="news-tag">${escapeHtml(t)}</span>`).join(' ');
+    const tickerEsc = escapeHtml(ticker);
 
     const card = document.createElement('div');
     card.className = 'news-card';
     card.innerHTML = `
       <div class="news-meta">
-        <span class="news-ticker">${escapeHtml(ticker)}</span>
+        <span class="news-ticker" style="cursor:pointer;" onclick="quickTradeSymbol('${tickerEsc}')" title="Trade ${tickerEsc}">${tickerEsc}</span>
         <span class="news-source">${escapeHtml(source)}</span>
         ${tagsHtml}
         <span class="news-time">${escapeHtml(timeStr)}</span>
@@ -700,27 +916,36 @@ async function loadConfig(force = false) {
       if (el && (force || document.activeElement !== el)) el.value = (val != null) ? val : '';
     };
 
-    setVal('cfg-strategy-preset', cfg.strategy_preset || (cfg.candle_interval === '1m' ? 'fast_1m' : 'standard_5m'));
-    setVal('cfg-max-trades', cfg.max_trades_per_day);
-    setVal('cfg-max-orders', cfg.max_orders_per_day);
-    setVal('cfg-budget', cfg.budget);
-    setVal('cfg-max-loss-trade', cfg.max_loss_per_trade_usd);
-    setVal('cfg-max-loss-day', cfg.max_daily_loss_usd);
-    setVal('cfg-min-rr', cfg.min_reward_risk);
+    setVal('cfg-strategy-preset', cfg.strategy_preset || 'all_markets_24_7');
+    setVal('cfg-max-trades', cfg.max_trades_per_day != null ? cfg.max_trades_per_day : 0);
+    setVal('cfg-max-orders', cfg.max_orders_per_day != null ? cfg.max_orders_per_day : 0);
+    setVal('cfg-budget', cfg.budget != null ? cfg.budget : 5000);
+    setVal('cfg-max-loss-trade', cfg.max_loss_per_trade_usd != null ? cfg.max_loss_per_trade_usd : 50);
+    setVal('cfg-max-order-usd', cfg.max_order_usd != null ? cfg.max_order_usd : 0);
+    setVal('cfg-max-loss-day', cfg.max_daily_loss_usd != null ? cfg.max_daily_loss_usd : 0);
+    setVal('cfg-min-rr', cfg.min_reward_risk != null ? cfg.min_reward_risk : 1.0);
+    setVal('cfg-allow-all-markets', String(cfg.allow_all_markets !== false));
+    setVal('cfg-fractional', String(cfg.fractional !== false));
+    setVal('cfg-allow-margin', String(cfg.allow_margin !== false));
+    setVal('cfg-allow-options', String(cfg.allow_options !== false));
+    setVal('cfg-allow-short', String(cfg.allow_short !== false));
     setVal('cfg-candle-interval', cfg.candle_interval || '1m');
     setVal('cfg-or-minutes', cfg.or_minutes || '5');
-    setVal('cfg-volume-mult', cfg.min_volume_x != null ? Number(cfg.min_volume_x).toFixed(1) : '1.5');
-    setVal('cfg-entries-before', cfg.no_entries_before || '09:35');
-    setVal('cfg-entries-after', cfg.no_entries_after || '15:30');
-    setVal('cfg-flat-by', cfg.flat_by || '15:55');
+    setVal('cfg-volume-mult', cfg.min_volume_x != null ? Number(cfg.min_volume_x).toFixed(1) : '1.0');
+    setVal('cfg-entries-before', cfg.no_entries_before || '00:00');
+    setVal('cfg-entries-after', cfg.no_entries_after || '23:59');
+    setVal('cfg-flat-by', cfg.flat_by || '23:59');
     setVal('cfg-paper-toggle', String(cfg.paper !== false));
     setVal('cfg-alpaca-key', cfg.alpaca_api_key || '');
     setVal('cfg-alpaca-secret', cfg.alpaca_secret_key || '');
     setVal('cfg-pdt-guard', String(cfg.pdt_guard === true));
     setVal('cfg-ai-enabled', String(cfg.ai_autonomous !== false));
-    setVal('cfg-ai-confidence', cfg.ai_confidence_threshold || 80);
+    setVal('cfg-ai-unlimited', String(cfg.ai_unlimited_orders !== false));
+    setVal('cfg-ai-confidence', cfg.ai_confidence_threshold != null ? cfg.ai_confidence_threshold : 65);
+    setVal('cfg-ai-max-positions', cfg.ai_max_concurrent_positions != null ? cfg.ai_max_concurrent_positions : 0);
+    setVal('cfg-ai-max-cycle', cfg.ai_max_orders_per_cycle != null ? cfg.ai_max_orders_per_cycle : 0);
     setVal('cfg-ai-breakeven', String(cfg.ai_auto_breakeven !== false));
-    setVal('cfg-ai-flatten', String(cfg.ai_auto_flatten !== false));
+    setVal('cfg-ai-flatten', String(cfg.ai_auto_flatten === true));
 
     renderStrategyUI(cfg);
   } catch (err) {
@@ -736,28 +961,42 @@ async function saveSettingsForm(e) {
     return el ? el.value.trim() : '';
   };
 
+  const maxOrders = Math.max(0, parseInt(numOr(getVal('cfg-max-orders'), 0)));
+  const maxTrades = Math.max(0, parseInt(numOr(getVal('cfg-max-trades'), 0)));
+  const aiUnlimited = getVal('cfg-ai-unlimited') !== 'false';
+
   const payload = {
-    strategy_preset: getVal('cfg-strategy-preset') || 'fast_1m',
-    max_trades_per_day: parseInt(getVal('cfg-max-trades')) || 3,
-    max_orders_per_day: parseInt(getVal('cfg-max-orders')) || 10,
-    budget: parseFloat(getVal('cfg-budget')) || 5000,
-    max_loss_per_trade_usd: parseFloat(getVal('cfg-max-loss-trade')) || 50,
-    max_daily_loss_usd: parseFloat(getVal('cfg-max-loss-day')) || 150,
-    min_reward_risk: parseFloat(getVal('cfg-min-rr')) || 1.0,
+    strategy_preset: getVal('cfg-strategy-preset') || 'all_markets_24_7',
+    max_trades_per_day: maxTrades,
+    max_orders_per_day: maxOrders,
+    allow_unlimited_orders: aiUnlimited || maxOrders === 0,
+    allow_all_markets: getVal('cfg-allow-all-markets') !== 'false',
+    fractional: getVal('cfg-fractional') !== 'false',
+    allow_margin: getVal('cfg-allow-margin') !== 'false',
+    allow_options: getVal('cfg-allow-options') !== 'false',
+    allow_short: getVal('cfg-allow-short') !== 'false',
+    budget: numOr(getVal('cfg-budget'), 5000),
+    max_loss_per_trade_usd: numOr(getVal('cfg-max-loss-trade'), 50),
+    max_order_usd: Math.max(0, numOr(getVal('cfg-max-order-usd'), 0)),
+    max_daily_loss_usd: Math.max(0, numOr(getVal('cfg-max-loss-day'), 0)),
+    min_reward_risk: numOr(getVal('cfg-min-rr'), 1.0),
     candle_interval: getVal('cfg-candle-interval') || '1m',
-    or_minutes: parseInt(getVal('cfg-or-minutes')) || 5,
-    min_volume_x: parseFloat(getVal('cfg-volume-mult')) || 1.5,
-    no_entries_before: getVal('cfg-entries-before') || '09:35',
-    no_entries_after: getVal('cfg-entries-after') || '15:30',
-    flat_by: getVal('cfg-flat-by') || '15:55',
+    or_minutes: parseInt(numOr(getVal('cfg-or-minutes'), 5)),
+    min_volume_x: numOr(getVal('cfg-volume-mult'), 1.0),
+    no_entries_before: getVal('cfg-entries-before') || '00:00',
+    no_entries_after: getVal('cfg-entries-after') || '23:59',
+    flat_by: getVal('cfg-flat-by') || '23:59',
     paper: getVal('cfg-paper-toggle') !== 'false',
     alpaca_api_key: getVal('cfg-alpaca-key'),
     alpaca_secret_key: getVal('cfg-alpaca-secret'),
     pdt_guard: getVal('cfg-pdt-guard') === 'true',
     ai_autonomous: getVal('cfg-ai-enabled') !== 'false',
-    ai_confidence_threshold: parseInt(getVal('cfg-ai-confidence')) || 80,
+    ai_unlimited_orders: aiUnlimited,
+    ai_confidence_threshold: parseInt(numOr(getVal('cfg-ai-confidence'), 65)),
+    ai_max_concurrent_positions: Math.max(0, parseInt(numOr(getVal('cfg-ai-max-positions'), 0))),
+    ai_max_orders_per_cycle: Math.max(0, parseInt(numOr(getVal('cfg-ai-max-cycle'), 0))),
     ai_auto_breakeven: getVal('cfg-ai-breakeven') !== 'false',
-    ai_auto_flatten: getVal('cfg-ai-flatten') !== 'false'
+    ai_auto_flatten: getVal('cfg-ai-flatten') === 'true'
   };
 
   try {
@@ -772,7 +1011,7 @@ async function saveSettingsForm(e) {
       isSettingsFormDirty = false;
       renderStrategyUI(result.config);
       fetchState();
-      alert('Trading settings, daily trade limits, and risk bounds updated successfully!');
+      alert('All-Markets & Unlimited AI settings saved successfully!');
     } else {
       alert('Failed to update settings.');
     }
@@ -1000,8 +1239,12 @@ function renderAIAgent(ai) {
   if (!ai) return;
 
   const isEnabled = ai.enabled !== false;
-  const thresh = ai.confidence_threshold || 80;
+  const isUnlimited = ai.unlimited_orders !== false;
+  const thresh = ai.confidence_threshold != null ? ai.confidence_threshold : 65;
   const actionsCount = ai.actions_today || 0;
+  const ordersExecuted = ai.orders_executed != null ? ai.orders_executed : actionsCount;
+  const maxPos = ai.max_concurrent_positions != null ? ai.max_concurrent_positions : 0;
+  const maxCycle = ai.max_orders_per_cycle != null ? ai.max_orders_per_cycle : 0;
   const statusTxt = ai.status || (isEnabled ? 'Autonomous Scanning 24/7' : 'Paused (Manual Mode)');
 
   // 1. Header Toggle Button
@@ -1010,7 +1253,7 @@ function renderAIAgent(ai) {
   if (btnToggle && txtToggle) {
     if (isEnabled) {
       btnToggle.className = 'btn btn-ai-toggle active';
-      txtToggle.textContent = '🤖 AI Auto-Pilot: ON';
+      txtToggle.textContent = isUnlimited ? '🤖 AI Auto-Pilot: ♾️ ON' : '🤖 AI Auto-Pilot: ON';
     } else {
       btnToggle.className = 'btn btn-ai-toggle paused';
       txtToggle.textContent = '🤖 AI Auto-Pilot: OFF';
@@ -1023,7 +1266,7 @@ function renderAIAgent(ai) {
   if (btnPaneToggle && lblPaneToggle) {
     if (isEnabled) {
       btnPaneToggle.className = 'btn btn-ai-toggle-large active';
-      lblPaneToggle.textContent = 'Auto-Pilot: ACTIVE';
+      lblPaneToggle.textContent = isUnlimited ? 'Auto-Pilot: UNLIMITED' : 'Auto-Pilot: ACTIVE';
     } else {
       btnPaneToggle.className = 'btn btn-ai-toggle-large paused';
       lblPaneToggle.textContent = 'Auto-Pilot: PAUSED';
@@ -1033,63 +1276,72 @@ function renderAIAgent(ai) {
   // 3. Tab Badge
   const tabBadge = document.getElementById('tab-ai-badge');
   if (tabBadge) {
-    tabBadge.textContent = isEnabled ? 'ACTIVE' : 'OFF';
+    tabBadge.textContent = isEnabled ? (isUnlimited ? '♾️ 24/7' : 'ACTIVE') : 'OFF';
     tabBadge.style.background = isEnabled ? '#10b981' : '#64748b';
   }
 
   // 4. KPI Summary Pill
   const kpiBadge = document.getElementById('kpi-ai-badge');
   const kpiThresh = document.getElementById('kpi-ai-thresh');
+  const kpiUnlimTag = document.getElementById('kpi-ai-unlimited-tag');
   const kpiSub = document.getElementById('kpi-ai-sub');
   if (kpiBadge) {
     kpiBadge.textContent = isEnabled ? 'ACTIVE' : 'PAUSED';
     kpiBadge.className = isEnabled ? 'verdict-pill pill-pass' : 'verdict-pill pill-warn';
   }
-  if (kpiThresh) {
-    kpiThresh.textContent = `${thresh}% Gate`;
-  }
+  if (kpiThresh) kpiThresh.textContent = `${thresh}% Gate`;
+  if (kpiUnlimTag) kpiUnlimTag.style.display = isUnlimited ? 'inline-block' : 'none';
   if (kpiSub) {
-    kpiSub.textContent = `${actionsCount} Actions Today | ${ai.auto_breakeven !== false ? 'Auto-Protect ON' : 'Fixed Stops'}`;
+    kpiSub.textContent = `${ordersExecuted} Orders | ${isUnlimited ? 'Unlimited' : `Cap ${maxPos}/${maxCycle}`}`;
   }
 
   // 5. Pane High-Level Metrics
   const metricStatus = document.getElementById('ai-metric-status');
   const metricThresh = document.getElementById('ai-metric-threshold');
+  const metricLimitsSub = document.getElementById('ai-metric-limits-sub');
   const metricActions = document.getElementById('ai-metric-actions');
   const metricLast = document.getElementById('ai-metric-last-action');
+  const metricProt = document.getElementById('ai-metric-protections');
 
   if (metricStatus) {
     metricStatus.textContent = statusTxt;
     metricStatus.className = isEnabled ? 'ai-metric-val text-emerald' : 'ai-metric-val text-amber';
   }
   if (metricThresh) {
-    metricThresh.textContent = `${thresh}% Minimum`;
+    metricThresh.textContent = isUnlimited ? `${thresh}% | UNLIMITED` : `${thresh}% Minimum`;
+  }
+  if (metricLimitsSub) {
+    metricLimitsSub.textContent = isUnlimited ? 'No Daily Order or Position Ceiling' : `Max ${maxPos || '∞'} Pos | ${maxCycle || '∞'} / Cycle`;
   }
   if (metricActions) {
-    metricActions.textContent = `${actionsCount} Execution${actionsCount === 1 ? '' : 's'}`;
+    metricActions.textContent = `${ordersExecuted} Order${ordersExecuted === 1 ? '' : 's'} (${actionsCount} Actions)`;
   }
   if (metricLast) {
     metricLast.textContent = `Last: ${ai.last_action || 'None'}`;
   }
+  if (metricProt) {
+    metricProt.textContent = `${ai.auto_breakeven !== false ? 'Breakeven ON' : 'Fixed Stop'} | ${ai.auto_flatten ? 'EOD Stocks ON' : '24/7 Hold'}`;
+  }
 
-  // 6. Form Slider & Checkboxes (only if user is not actively adjusting)
+  // 6. Form Slider, Inputs & Checkboxes (only if not focused)
   const inputThresh = document.getElementById('input-ai-threshold');
   const valThresh = document.getElementById('ai-threshold-val');
-  if (inputThresh && document.activeElement !== inputThresh) {
-    inputThresh.value = thresh;
-  }
-  if (valThresh && document.activeElement !== inputThresh) {
-    valThresh.textContent = `${thresh}%`;
-  }
+  if (inputThresh && document.activeElement !== inputThresh) inputThresh.value = thresh;
+  if (valThresh && document.activeElement !== inputThresh) valThresh.textContent = `${thresh}%`;
+
+  const inputMaxPos = document.getElementById('input-ai-max-positions');
+  if (inputMaxPos && document.activeElement !== inputMaxPos) inputMaxPos.value = maxPos;
+  const inputMaxCycle = document.getElementById('input-ai-max-cycle');
+  if (inputMaxCycle && document.activeElement !== inputMaxCycle) inputMaxCycle.value = maxCycle;
+
+  const checkUnlim = document.getElementById('input-ai-unlimited');
+  if (checkUnlim && document.activeElement !== checkUnlim) checkUnlim.checked = isUnlimited;
 
   const checkBe = document.getElementById('input-ai-breakeven');
-  if (checkBe && document.activeElement !== checkBe) {
-    checkBe.checked = ai.auto_breakeven !== false;
-  }
+  if (checkBe && document.activeElement !== checkBe) checkBe.checked = ai.auto_breakeven !== false;
+
   const checkFlat = document.getElementById('input-ai-flatten');
-  if (checkFlat && document.activeElement !== checkFlat) {
-    checkFlat.checked = ai.auto_flatten !== false;
-  }
+  if (checkFlat && document.activeElement !== checkFlat) checkFlat.checked = ai.auto_flatten === true;
 
   // 7. Live Decision Chain & Reasoning Feed
   const feed = document.getElementById('ai-decisions-feed');
@@ -1100,8 +1352,8 @@ function renderAIAgent(ai) {
     feed.innerHTML = `
       <div class="empty-state-card">
         <div class="empty-icon">🤖</div>
-        <div class="empty-title">AI Agent Operating 24/7</div>
-        <div class="empty-desc">Evaluating candidate setups and risk rules every 30s. Click "Evaluate Now" to scan watchlist immediately.</div>
+        <div class="empty-title">AI Agent Operating 24/7 Across All Markets</div>
+        <div class="empty-desc">Scanning global equities, 5,930 US companies, crypto, forex, and commodities. Click "Evaluate Now" to scan immediately.</div>
       </div>
     `;
     return;
@@ -1118,7 +1370,7 @@ function renderAIAgent(ai) {
       actionClass = 'executed';
       badgeClass = 'badge-buy';
       actionIcon = '⚡';
-      actionLabel = 'AUTONOMOUS BUY EXECUTED';
+      actionLabel = 'AUTONOMOUS ORDER EXECUTED';
     } else if (d.action === 'TRAILING_STOP_BREAKEVEN') {
       actionClass = 'breakeven';
       badgeClass = 'badge-breakeven';
@@ -1129,11 +1381,16 @@ function renderAIAgent(ai) {
       badgeClass = 'badge-target';
       actionIcon = '🎯';
       actionLabel = 'TARGET HIT -> PROFIT EXIT';
+    } else if (d.action === 'STOP_LOSS_EXIT') {
+      actionClass = 'STOP_LOSS_EXIT';
+      badgeClass = 'badge-stop';
+      actionIcon = '🛑';
+      actionLabel = 'STOP LOSS -> RISK EXIT';
     } else if (d.action === 'EOD_FLATTEN') {
       actionClass = 'flatten';
       badgeClass = 'badge-flatten';
       actionIcon = '⏰';
-      actionLabel = 'EOD RISK FLATTEN';
+      actionLabel = 'EOD STOCK FLATTEN';
     } else {
       actionClass = 'hold';
       badgeClass = 'badge-hold';
@@ -1142,12 +1399,11 @@ function renderAIAgent(ai) {
     }
 
     const conviction = d.conviction || 0;
-    const barColor = conviction >= 80 ? 'var(--accent-emerald)' : conviction >= 60 ? 'var(--accent-cyan)' : 'var(--text-dim)';
+    const barColor = conviction >= 75 ? 'var(--accent-emerald)' : conviction >= 55 ? 'var(--accent-cyan)' : 'var(--text-dim)';
 
-    // Factors chips
     let factorsHtml = '';
     if (d.factors && typeof d.factors === 'object') {
-      for (const [k, v] of Object.entries(d.factors)) {
+      for (const [, v] of Object.entries(d.factors)) {
         factorsHtml += `<span class="ai-factor-chip">${escapeHtml(v)}</span>`;
       }
     }
@@ -1159,7 +1415,7 @@ function renderAIAgent(ai) {
             <span>${actionIcon}</span>
             <span>${actionLabel}</span>
           </div>
-          <div class="ai-conviction-meter-mini" title="4-Factor Conviction: ${conviction}%">
+          <div class="ai-conviction-meter-mini" title="Multi-Factor Conviction: ${conviction}%">
             <span class="ai-conviction-score-txt">${conviction}% Conviction</span>
             <div class="ai-conviction-bar">
               <div class="ai-conviction-fill" style="width: ${conviction}%; background: ${barColor};"></div>
@@ -1174,7 +1430,7 @@ function renderAIAgent(ai) {
         ${factorsHtml ? `<div class="ai-factors-row">${factorsHtml}</div>` : ''}
 
         <div class="ai-decision-footer">
-          <span>Ticker: <strong style="color: var(--text-main);">${escapeHtml(d.symbol || 'MARKET')}</strong></span>
+          <span>Ticker: <strong style="color: var(--text-main);">${escapeHtml(d.symbol || 'MARKET')}</strong> ${d.asset_class ? `(${escapeHtml(d.asset_class)})` : ''}</span>
           <span>Timestamp: ${escapeHtml(d.time || '--:--:--')}</span>
         </div>
       </div>
@@ -1189,7 +1445,7 @@ async function toggleAIAutoPilot() {
     playChime(660, 0.15);
     const res = await fetch('/api/ai/toggle', { method: 'POST' });
     const data = await res.json();
-    playChime(data.ai_enabled ? 990 : 440, 0.25);
+    playChime(data.enabled ? 990 : 440, 0.25);
     await fetchState();
   } catch (err) {
     console.error("Error toggling AI Auto-Pilot:", err);
@@ -1204,9 +1460,9 @@ async function triggerAIEvaluationNow() {
     playChime(1100, 0.3);
     await fetchState();
     if (data.decisions && data.decisions.length > 0) {
-      const executed = data.decisions.find(d => d.status === 'EXECUTED');
-      if (executed) {
-        alert(`AI Autonomous Action Executed!\n${executed.action}: ${executed.symbol}\n${executed.details}`);
+      const executed = data.decisions.filter(d => d.status === 'EXECUTED');
+      if (executed.length > 0) {
+        alert(`AI Executed ${executed.length} Autonomous Action(s)!\nFirst: ${executed[0].action} ${executed[0].symbol}\n${executed[0].details}`);
       }
     }
   } catch (err) {
@@ -1218,15 +1474,21 @@ async function saveAIConfigForm(e) {
   if (e && e.preventDefault) e.preventDefault();
   try {
     playChime(750, 0.2);
-    const threshold = parseInt(document.getElementById('input-ai-threshold')?.value) || 80;
+    const threshold = parseInt(numOr(document.getElementById('input-ai-threshold')?.value, 65));
+    const unlimited_orders = document.getElementById('input-ai-unlimited')?.checked !== false;
+    const max_concurrent_positions = Math.max(0, parseInt(numOr(document.getElementById('input-ai-max-positions')?.value, 0)));
+    const max_orders_per_cycle = Math.max(0, parseInt(numOr(document.getElementById('input-ai-max-cycle')?.value, 0)));
     const auto_breakeven = document.getElementById('input-ai-breakeven')?.checked !== false;
-    const auto_flatten = document.getElementById('input-ai-flatten')?.checked !== false;
+    const auto_flatten = document.getElementById('input-ai-flatten')?.checked === true;
 
     const res = await fetch('/api/ai/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         threshold,
+        unlimited_orders,
+        max_concurrent_positions,
+        max_orders_per_cycle,
         auto_breakeven,
         auto_flatten
       })
@@ -1235,12 +1497,296 @@ async function saveAIConfigForm(e) {
     if (data.success) {
       playChime(1050, 0.25);
       await fetchState();
-      alert(`AI Auto-Pilot Settings Saved!\nThreshold: ${threshold}%\nAuto-Breakeven Stop: ${auto_breakeven ? 'ON' : 'OFF'}\nAuto-Flatten EOD: ${auto_flatten ? 'ON' : 'OFF'}`);
+      await loadConfig(true);
+      alert(`AI Auto-Pilot Settings Saved!\nConviction Threshold: ${threshold}%\nUnlimited Orders: ${unlimited_orders ? 'ON' : 'OFF'}\nAuto-Breakeven: ${auto_breakeven ? 'ON' : 'OFF'}`);
     }
   } catch (err) {
     console.error("Error saving AI config:", err);
     alert('Error saving AI settings: ' + err.message);
   }
+}
+
+// ==========================================================================
+// Multi-Market Search, Universe Sweep, Per-Position Close, News & Analyst
+// ==========================================================================
+
+let searchDebounceTimer = null;
+function debouncedMarketSearch(q) {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+  const dropdown = document.getElementById('market-search-results');
+  if (!q || q.trim().length < 2) {
+    if (dropdown) {
+      dropdown.classList.add('hidden');
+      dropdown.innerHTML = '';
+    }
+    return;
+  }
+  searchDebounceTimer = setTimeout(() => runMarketSearch(q.trim()), 280);
+}
+
+async function searchMarkets(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const q = (document.getElementById('input-market-search')?.value || '').trim();
+  if (q) await runMarketSearch(q);
+}
+
+async function runMarketSearch(q) {
+  const dropdown = document.getElementById('market-search-results');
+  if (!dropdown) return;
+  dropdown.classList.remove('hidden');
+  dropdown.innerHTML = '<div class="search-result-row"><span class="text-muted">Searching global exchanges, US universe, crypto &amp; FX...</span></div>';
+  try {
+    const res = await fetch(`/api/markets/search?q=${encodeURIComponent(q)}&limit=15`);
+    const data = await res.json();
+    const results = data.results || [];
+    if (results.length === 0) {
+      dropdown.innerHTML = `<div class="search-result-row"><span class="text-muted">No exact match for "${escapeHtml(q)}". Try adding raw ticker directly (e.g. BTC-USD, 7203.T, AAPL).</span></div>`;
+      return;
+    }
+    dropdown.innerHTML = results.map(r => {
+      const sym = escapeHtml(r.symbol || '');
+      const name = escapeHtml(r.name || sym);
+      const exch = escapeHtml(r.exchange || r.region || '');
+      const badge = escapeHtml(r.badge || r.asset_class || 'Market');
+      return `
+        <div class="search-result-row">
+          <div class="search-res-info">
+            <span class="search-res-sym">${sym}</span>
+            <span class="asset-badge ${assetBadgeClass(r.asset_class)}">${badge}</span>
+            <span class="search-res-name">${name} ${exch ? `(${exch})` : ''}</span>
+          </div>
+          <div class="search-res-actions">
+            <button type="button" class="btn btn-primary btn-xs" onclick="quickTradeSymbol('${sym}')">Trade</button>
+            <button type="button" class="btn btn-secondary btn-xs" onclick="addSymbolDirect('${sym}')">+ Watch</button>
+            <button type="button" class="btn btn-secondary btn-xs" onclick="openAnalystModal('${sym}')">Analyze</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    dropdown.innerHTML = `<div class="search-result-row"><span class="text-rose">Search error: ${escapeHtml(err.message)}</span></div>`;
+  }
+}
+
+async function addSymbolDirect(symbol) {
+  if (!symbol) return;
+  await fetch('/api/watchlist/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ symbol })
+  });
+  playChime(720, 0.12);
+  fetchState();
+}
+
+async function quickTradeFromInput(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const inp = document.getElementById('quick-trade-symbol');
+  const sym = (inp?.value || '').trim().toUpperCase();
+  if (!sym) return;
+  await quickTradeSymbol(sym);
+  if (inp) inp.value = '';
+}
+
+async function quickTradeSymbol(symbol) {
+  if (!symbol) return;
+  try {
+    playChime(700, 0.15);
+    const res = await fetch('/api/broker/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symbol })
+    });
+    const data = await res.json();
+    if (data.success) {
+      playChime(1050, 0.3);
+      fetchState();
+      alert(`Executed ${symbol} Order!\nBroker: ${data.broker}\nOrder ID: ${data.order_id || data.transaction?.id}`);
+    } else {
+      alert(`Trade Notice (${symbol}): ${data.error || 'Could not execute order'}`);
+    }
+  } catch (err) {
+    alert(`Trade Error (${symbol}): ${err.message}`);
+  }
+}
+
+async function closePosition(symbol) {
+  if (!symbol) return;
+  try {
+    playChime(480, 0.2);
+    const res = await fetch('/api/broker/close', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symbol })
+    });
+    const data = await res.json();
+    await syncTransactionsNow();
+    fetchState();
+    if (!data.success && data.error) {
+      alert(`Close Position Notice (${symbol}): ${data.error}`);
+    }
+  } catch (err) {
+    console.error("Close position error:", err);
+  }
+}
+
+async function scanUniverseNow() {
+  try {
+    playChime(680, 0.15);
+    const res = await fetch('/api/scanner/scan-universe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ batch_size: 500 })
+    });
+    const data = await res.json();
+    playChime(920, 0.25);
+    fetchState();
+    if (data.success) {
+      alert(`US Universe Batch Scanned!\nScanned: ${data.scanned} companies\nProgress: ${data.universe_scanned} / ${data.universe_total}\nHits Discovered: ${(data.hits || []).length}`);
+    }
+  } catch (err) {
+    alert('Universe Scan Error: ' + err.message);
+  }
+}
+
+async function refreshUniverseNow() {
+  try {
+    playChime(620, 0.15);
+    const res = await fetch('/api/scanner/refresh-universe', { method: 'POST' });
+    const data = await res.json();
+    fetchState();
+    if (data.success) {
+      alert(`Refreshed Nasdaq Trader US Universe!\nTotal companies loaded: ${data.universe_total}`);
+    } else {
+      alert('Universe refresh notice: ' + (data.error || 'Failed'));
+    }
+  } catch (err) {
+    alert('Universe Refresh Error: ' + err.message);
+  }
+}
+
+async function fetchNewsNow(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const inp = document.getElementById('news-fetch-symbol');
+  const raw = (inp?.value || '').trim().toUpperCase();
+  const symbols = raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : [];
+  try {
+    playChime(660, 0.15);
+    const res = await fetch('/api/news/fetch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symbols })
+    });
+    const data = await res.json();
+    playChime(880, 0.2);
+    await fetchState();
+    if (!data.success && data.error) alert('News Fetch Notice: ' + data.error);
+  } catch (err) {
+    alert('News Fetch Error: ' + err.message);
+  }
+}
+
+async function runTimeMachineForSymbol(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const sym = (document.getElementById('tm-symbol-input')?.value || '').trim().toUpperCase();
+  if (sym) await runTimeMachineSymbolDirect(sym);
+}
+
+async function runTimeMachineSymbolDirect(symbol) {
+  if (!symbol) return;
+  switchTab('timemachine');
+  const inp = document.getElementById('tm-symbol-input');
+  if (inp) inp.value = symbol;
+  try {
+    playChime(640, 0.15);
+    const res = await fetch('/api/timemachine/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symbol })
+    });
+    const data = await res.json();
+    if (data.success && data.timemachine) {
+      playChime(960, 0.25);
+      await fetchState();
+    } else {
+      alert(`Time Machine (${symbol}): ${data.error || 'Simulation failed'}`);
+    }
+  } catch (err) {
+    alert(`Time Machine Error (${symbol}): ${err.message}`);
+  }
+}
+
+async function openAnalystModal(symbol) {
+  const modal = document.getElementById('analyst-modal');
+  const titleEl = document.getElementById('analyst-modal-title');
+  const subEl = document.getElementById('analyst-modal-sub');
+  const bodyEl = document.getElementById('analyst-modal-body');
+  if (!modal || !bodyEl) return;
+
+  const sym = symbol || (state && state.plan && state.plan.symbol) || 'AAPL';
+  modal.classList.remove('hidden');
+  if (titleEl) titleEl.textContent = `${sym} - Market Quote & SEC EDGAR Analysis`;
+  if (subEl) subEl.textContent = 'Querying Yahoo live quote & trader-analyst SEC XBRL facts...';
+  bodyEl.innerHTML = '<p class="text-muted">Loading financials, PE/valuation, revenue, net income &amp; technicals...</p>';
+
+  try {
+    const res = await fetch(`/api/analyst/${encodeURIComponent(sym)}`);
+    const data = await res.json();
+    if (!data.success) {
+      bodyEl.innerHTML = `<p class="text-rose">${escapeHtml(data.error || 'Analysis failed')}</p>`;
+      return;
+    }
+    const q = data.quote || {};
+    const analysis = data.analysis || data.sec_facts || {};
+    const asset = data.asset || {};
+    const symDisp = data.symbol || analysis.ticker || sym;
+    const metrics = analysis.metrics || analysis.ttm || {};
+    const livePrice = q.price != null ? q.price : analysis.price;
+    const liveChange = q.change_pct != null
+      ? `${Number(q.change_pct) >= 0 ? '+' : ''}${Number(q.change_pct).toFixed(2)}%`
+      : (q.change || analysis.change || '--');
+    const statCards = [
+      ['Symbol / Market', `${symDisp} (${asset.badge || analysis.asset_class || 'Market'})`],
+      ['Live Price', livePrice != null ? formatPrice(livePrice, symDisp) : '--'],
+      ['Day Change', liveChange],
+      ['Exchange / Region', `${q.exchange || asset.region || analysis.region || '-'} (${q.currency || 'USD'})`],
+      ['Company / CIK', analysis.name ? `${analysis.name}${analysis.cik ? ` (CIK ${analysis.cik})` : ''}` : (q.name || symDisp)],
+    ];
+    if (metrics && typeof metrics === 'object') {
+      Object.entries(metrics).slice(0, 8).forEach(([k, v]) => {
+        if (v === null || v === undefined) return;
+        const valText = (v && typeof v === 'object') ? (v.formatted || v.val || JSON.stringify(v)) : String(v);
+        statCards.push([k, valText]);
+      });
+    }
+    const changesHtml = (Array.isArray(analysis.changes) && analysis.changes.length > 0)
+      ? `<div style="margin-top:12px;"><strong>Recent Fundamental Changes:</strong><ul style="margin:6px 0 0 18px; color:var(--text-muted); font-size:12px;">${analysis.changes.slice(0, 5).map(c => `<li>${escapeHtml(typeof c === 'string' ? c : JSON.stringify(c))}</li>`).join('')}</ul></div>`
+      : '';
+    bodyEl.innerHTML = `
+      <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="quickTradeSymbol('${escapeHtml(symDisp)}')">🚀 Execute Trade (${escapeHtml(symDisp)})</button>
+        <button class="btn btn-secondary btn-sm" onclick="addSymbolDirect('${escapeHtml(symDisp)}')">+ Add to Watchlist</button>
+        <button class="btn btn-secondary btn-sm" onclick="runTimeMachineSymbolDirect('${escapeHtml(symDisp)}'); closeAnalystModal()">⏳ Run 10k Replays</button>
+      </div>
+      <div class="analyst-grid">
+        ${statCards.map(([lbl, val]) => `
+          <div class="analyst-stat">
+            <div class="analyst-stat-label">${escapeHtml(lbl)}</div>
+            <div class="analyst-stat-val">${escapeHtml(val)}</div>
+          </div>
+        `).join('')}
+      </div>
+      ${changesHtml}
+      ${analysis.note ? `<p class="text-muted" style="margin-top:10px; font-size:12px;">${escapeHtml(analysis.note)}</p>` : ''}
+    `;
+  } catch (err) {
+    bodyEl.innerHTML = `<p class="text-rose">Error loading analysis: ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+function closeAnalystModal() {
+  const modal = document.getElementById('analyst-modal');
+  if (modal) modal.classList.add('hidden');
 }
 
 // Initial Kickoff

@@ -12,6 +12,7 @@ import sys
 import urllib.parse
 
 from engine import TradingEngine
+from markets import MARKET_CATEGORIES, classify_asset, get_global_market_sessions, normalize_symbol
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(ROOT, "web")
@@ -40,7 +41,8 @@ class TraderHandler(SimpleHTTPRequestHandler):
             self.send_response(204)
             self.end_headers()
         elif path.startswith("/api/"):
-            self.handle_api_get(path)
+            query = urllib.parse.parse_qs(url.query)
+            self.handle_api_get(path, query)
         else:
             if path in ("", "/"):
                 self.path = "/index.html"
@@ -63,7 +65,8 @@ class TraderHandler(SimpleHTTPRequestHandler):
         else:
             self.send_error(404, "Not Found")
 
-    def handle_api_get(self, path):
+    def handle_api_get(self, path, query=None):
+        query = query or {}
         if path == "/api/status" or path == "/api/state":
             state = engine.get_state()
             self._send_json(200, state)
@@ -71,6 +74,32 @@ class TraderHandler(SimpleHTTPRequestHandler):
             self._send_json(200, {"logs": engine.logs})
         elif path == "/api/watchlist":
             self._send_json(200, {"watchlist": engine.watchlist, "quotes": engine.quotes})
+        elif path == "/api/markets/search":
+            q = (query.get("q") or [""])[0]
+            limit = int((query.get("limit") or ["25"])[0])
+            results = engine.search_markets(q, limit=limit)
+            self._send_json(200, {"query": q, "results": results})
+        elif path == "/api/markets/categories":
+            self._send_json(200, {
+                "success": True,
+                "categories": MARKET_CATEGORIES,
+                "universe_total": len(engine.us_universe),
+                "sessions": get_global_market_sessions(),
+            })
+        elif path == "/api/analyst" or path.startswith("/api/analyst/"):
+            raw_sym = path.split("/api/analyst/", 1)[1] if path.startswith("/api/analyst/") else (query.get("symbol") or ["TSLA"])[0]
+            sym = normalize_symbol(urllib.parse.unquote(raw_sym))
+            try:
+                data = engine.analyze_company(sym)
+                self._send_json(200, {
+                    "success": True,
+                    "symbol": data.get("ticker", sym),
+                    "asset": classify_asset(sym),
+                    "quote": engine.quotes.get(sym, {}),
+                    "analysis": data,
+                })
+            except Exception as e:
+                self._send_json(200, {"success": False, "error": str(e), "symbol": sym})
         elif path == "/api/alerts":
             self._send_json(200, {"alerts": engine.alerts, "triggered": engine.triggered_alerts})
         elif path == "/api/news":
@@ -92,13 +121,17 @@ class TraderHandler(SimpleHTTPRequestHandler):
         elif path == "/api/ai/status":
             self._send_json(200, {
                 "enabled": engine.ai_enabled,
+                "unlimited_orders": engine.ai_unlimited_orders,
                 "status": engine.ai_status,
                 "confidence_threshold": engine.ai_confidence_threshold,
+                "max_concurrent_positions": engine.ai_max_concurrent_positions,
+                "max_orders_per_cycle": engine.ai_max_orders_per_cycle,
                 "actions_today": engine.ai_actions_count,
+                "orders_executed": engine.ai_orders_executed,
                 "auto_breakeven": engine.ai_auto_breakeven_stop,
                 "auto_flatten": engine.ai_auto_flatten_eod,
                 "last_action": engine.ai_last_action,
-                "decisions": engine.ai_decisions[:25]
+                "decisions": engine.ai_decisions[:30],
             })
         else:
             self.send_error(404, "API endpoint not found")
@@ -163,8 +196,45 @@ class TraderHandler(SimpleHTTPRequestHandler):
             self._send_json(200, {"success": True, "config": engine.get_config()})
 
         elif path == "/api/broker/execute":
+            if data.get("symbol") and not data.get("order"):
+                preset = data.get("preset") or engine.config.get("strategy_preset", "all_markets_24_7")
+                engine.generate_strategy_order(preset, data["symbol"])
             res = engine.execute_order(data.get("order"))
             self._send_json(200, res)
+
+        elif path == "/api/broker/close":
+            sym = data.get("symbol", "")
+            res = engine.close_position(sym, reason=data.get("reason", "MANUAL_CLOSE"))
+            self._send_json(200, res)
+
+        elif path == "/api/scanner/scan-universe":
+            count = int(data.get("count") or data.get("batch_size") or 500)
+            res = engine.scan_universe_batch(count=count)
+            self._send_json(200, res)
+
+        elif path == "/api/scanner/refresh-universe":
+            started = engine.refresh_universe_async()
+            self._send_json(200, {
+                "success": True,
+                "started": started,
+                "universe_total": len(engine.us_universe),
+            })
+
+        elif path == "/api/news/fetch":
+            tickers = data.get("tickers") or data.get("symbols")
+            if isinstance(tickers, str):
+                tickers = [t.strip().upper() for t in tickers.split(",") if t.strip()]
+            engine._fetch_news(custom_tickers=tickers)
+            self._send_json(200, {"success": True, "news": engine.news_feed})
+
+        elif path == "/api/timemachine/run":
+            sym = data.get("symbol", "TSLA")
+            replays = int(data.get("replays") or 10000)
+            try:
+                doc = engine.run_timemachine(sym, replays=replays)
+                self._send_json(200, {"success": True, "timemachine": doc})
+            except Exception as e:
+                self._send_json(200, {"success": False, "error": str(e)})
 
         elif path == "/api/broker/sync":
             engine.sync_broker()
@@ -203,25 +273,29 @@ class TraderHandler(SimpleHTTPRequestHandler):
             self._send_json(200, {"success": True, "enabled": engine.ai_enabled, "status": engine.ai_status})
 
         elif path == "/api/ai/config":
-            thresh_val = data.get("confidence_threshold") or data.get("threshold")
+            updates = {}
+            thresh_val = data.get("confidence_threshold") if "confidence_threshold" in data else data.get("threshold")
             if thresh_val is not None:
-                engine.ai_confidence_threshold = int(thresh_val)
-                engine.config["ai_confidence_threshold"] = engine.ai_confidence_threshold
+                updates["ai_confidence_threshold"] = int(thresh_val)
             if "auto_breakeven" in data:
-                engine.ai_auto_breakeven_stop = bool(data["auto_breakeven"])
-                engine.config["ai_auto_breakeven"] = engine.ai_auto_breakeven_stop
+                updates["ai_auto_breakeven"] = bool(data["auto_breakeven"])
             if "auto_flatten" in data:
-                engine.ai_auto_flatten_eod = bool(data["auto_flatten"])
-                engine.config["ai_auto_flatten"] = engine.ai_auto_flatten_eod
+                updates["ai_auto_flatten"] = bool(data["auto_flatten"])
+            if "unlimited_orders" in data:
+                updates["ai_unlimited_orders"] = bool(data["unlimited_orders"])
             if "max_concurrent_positions" in data:
-                engine.ai_max_concurrent_positions = int(data["max_concurrent_positions"])
-                engine.config["ai_max_concurrent_positions"] = engine.ai_max_concurrent_positions
+                updates["ai_max_concurrent_positions"] = int(data["max_concurrent_positions"])
+            if "max_orders_per_cycle" in data:
+                updates["ai_max_orders_per_cycle"] = int(data["max_orders_per_cycle"])
+            engine.update_config(updates)
             self._send_json(200, {
                 "success": True,
+                "unlimited_orders": engine.ai_unlimited_orders,
                 "confidence_threshold": engine.ai_confidence_threshold,
                 "auto_breakeven": engine.ai_auto_breakeven_stop,
                 "auto_flatten": engine.ai_auto_flatten_eod,
-                "max_concurrent_positions": engine.ai_max_concurrent_positions
+                "max_concurrent_positions": engine.ai_max_concurrent_positions,
+                "max_orders_per_cycle": engine.ai_max_orders_per_cycle,
             })
 
         elif path == "/api/ai/evaluate-now":

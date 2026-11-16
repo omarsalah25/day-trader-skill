@@ -73,7 +73,7 @@ DEFAULTS = {
     "max_orders_per_day": 10, "min_reward_risk": 1.0, "require_stop": True,
     "no_entries_before": "09:45", "no_entries_after": "15:30", "flat_by": "15:55",
     "paper": True, "blocked": [], "allow_options": False, "allow_margin": False, "allow_short": False,
-    "pdt_guard": False,
+    "pdt_guard": False, "allow_all_markets": False, "allow_unlimited_orders": False,
 }
 ALPACA_FIELDS = ("symbol", "side", "qty", "notional", "type", "time_in_force", "limit_price",
                  "stop_price", "trail_price", "trail_percent", "extended_hours", "client_order_id",
@@ -85,6 +85,7 @@ TYPES = {"market", "limit", "stop", "stop_limit", "trailing_stop"}
 TIFS = {"day", "gtc", "opg", "cls", "ioc", "fok"}
 OCC = re.compile(r"^[A-Z]{1,6}\d{6}[CP]\d{8}$")
 TICKER = re.compile(r"^[A-Z]{1,5}([.\-][A-Z]{1,2})?$")
+ALL_MARKET_TICKER = re.compile(r"^[A-Z0-9^][A-Z0-9.\-/=^]{0,20}$")
 HHMM = re.compile(r"^([01]?\d|2[0-3]):([0-5]\d)$")
 CENT = 0.005
 FRESH_MINUTES = 15
@@ -370,6 +371,39 @@ def day_trades(state, today):
 
 # ---------------------------------------------------------------- the check
 
+def _is_crypto(sym):
+    s = sym.upper()
+    return s.endswith(("-USD", "-USDT", "-BTC", "-ETH", "/USD", "/USDT"))
+
+
+def _is_24_5_or_global(sym):
+    s = sym.upper()
+    return ("=X" in s or "=F" in s or s.startswith("^") or
+            ("." in s and not re.match(r"^[A-Z]{1,4}\.[AB]$", s)))
+
+
+def _fmt_p(x):
+    f = float(x)
+    if f < 0.1:
+        return "%.6f" % f
+    if f < 10.0:
+        return "%.4f" % f
+    return "%.2f" % f
+
+
+def window_check_symbol(now_et, c, sym):
+    if c.get("allow_all_markets"):
+        if _is_crypto(sym):
+            return [], []
+        if _is_24_5_or_global(sym):
+            return [], []
+        before = hhmm(c.get("no_entries_before"), "no_entries_before")
+        after = hhmm(c.get("no_entries_after"), "no_entries_after")
+        if before == datetime.time(0, 0) and after in (datetime.time(23, 55), datetime.time(23, 59)):
+            return [], []
+    return window_check(now_et, c)
+
+
 def check(orders, cfg, portfolio=None, prices=None, state=None, today=None, now=None, price_times=None):
     """Pure function. Returns {"results": [...], "pass": n, "block": n, "warnings": [...]}.
 
@@ -462,7 +496,8 @@ def check(orders, cfg, portfolio=None, prices=None, state=None, today=None, now=
             if notional is not None:
                 reasons.append("format: a bracket order needs a whole-share qty, not a notional amount")
             elif _f(qty) is not None and abs(_f(qty) - round(_f(qty))) > 1e-9:
-                reasons.append("format: a bracket order takes whole shares only, got qty %r" % qty)
+                if not (c.get("allow_all_markets") or c.get("fractional")):
+                    reasons.append("format: a bracket order takes whole shares only, got qty %r" % qty)
             if tif not in ("day", "gtc"):
                 reasons.append("format: a bracket order needs time_in_force day or gtc, got %r" % tif)
             if o.get("take_profit_limit_price") is None or o.get("stop_loss_stop_price") is None:
@@ -474,11 +509,14 @@ def check(orders, cfg, portfolio=None, prices=None, state=None, today=None, now=
 
         # asset
         if sym and OCC.match(sym.replace(" ", "")):
-            if not c.get("allow_options"):
+            if not (c.get("allow_options") or c.get("allow_all_markets")):
                 reasons.append("asset: %s is an option contract; options are off "
                                "(\"allow_options\": false)" % sym)
             else:
                 warns.append("option order: options can lose 100%% of what you pay")
+        elif sym and c.get("allow_all_markets"):
+            if not ALL_MARKET_TICKER.match(sym):
+                reasons.append("asset: %s does not look like a valid market symbol" % sym)
         elif sym and ("/" in sym or not TICKER.match(sym)):
             reasons.append("asset: %s does not look like a US stock or ETF ticker; "
                            "this pack trades stocks and ETFs only" % sym)
@@ -495,10 +533,14 @@ def check(orders, cfg, portfolio=None, prices=None, state=None, today=None, now=
             cands = [(p, w) for p, w in ((plan_entry, "plan"), (live, "price")) if p]
             if cands:
                 ref, ref_from = max(cands, key=lambda x: x[0])
-                ref = _cent(ref)
-                if live and ref_from == "price" and plan_entry and live > plan_entry + CENT:
+                is_micro = c.get("allow_all_markets") and (ref < 10.0 or "=" in sym)
+                if not is_micro:
+                    ref = _cent(ref)
+                if live and ref_from == "price" and plan_entry and live > plan_entry + (1e-6 if is_micro else CENT):
                     info.append("%s last %s is above the plan's entry %s: the risk is measured from %s"
-                                % (sym, _p(ref), _p(plan_entry), _p(ref)))
+                                % (sym, _fmt_p(ref) if is_micro else _p(ref),
+                                   _fmt_p(plan_entry) if is_micro else _p(plan_entry),
+                                   _fmt_p(ref) if is_micro else _p(ref)))
             elif sym in prices:
                 ref, ref_from = prices[sym], "stale price"
         if plan_entry and live is None and sym in prices and price_times is not None and typ == "market":
@@ -530,11 +572,12 @@ def check(orders, cfg, portfolio=None, prices=None, state=None, today=None, now=
         # blocked list and size
         if sym in blocked:
             later.append("blocked: %s is on your blocked list" % sym)
+        unlim = bool(c.get("allow_unlimited_orders"))
         if value is not None:
             if value < float(c.get("min_order_usd") or 0) - CENT:
                 later.append("size: %s is under your %s minimum order"
                              % (money(value), money(c["min_order_usd"])))
-            if c.get("max_order_usd") and value > float(c["max_order_usd"]) + CENT:
+            if c.get("max_order_usd") and not unlim and value > float(c["max_order_usd"]) + CENT:
                 later.append("size: %s is over your %s max order"
                              % (money(value), money(c["max_order_usd"])))
 
@@ -544,18 +587,19 @@ def check(orders, cfg, portfolio=None, prices=None, state=None, today=None, now=
         buffer_usd = total * float(c.get("cash_buffer_pct") or 0) / 100.0
         if value is not None and side == "buy" and kind == "entry":
             after_cash = cash - value
-            if after_cash < -CENT and not c.get("allow_margin"):
-                later.append("cash: needs %s but only %s cash; that would be margin (borrowed money)"
-                             % (money(value), money(cash)))
-            elif after_cash < buffer_usd - CENT:
-                later.append("cash: leaves %s cash, under your %s%% buffer of %s"
-                             % (money(max(after_cash, 0)), _pct(c["cash_buffer_pct"]), money(buffer_usd)))
-            pos_after = held_value + value
-            limit = total * float(c.get("max_position_pct") or 100) / 100.0
-            if total > 0 and pos_after > limit + CENT:
-                later.append("position: %s would be %s, %.1f%% of the %s account, over your %s%% cap"
-                             % (sym, money(pos_after), 100.0 * pos_after / total, money(total),
-                                _pct(c["max_position_pct"])))
+            if not unlim:
+                if after_cash < -CENT and not c.get("allow_margin"):
+                    later.append("cash: needs %s but only %s cash; that would be margin (borrowed money)"
+                                 % (money(value), money(cash)))
+                elif after_cash < buffer_usd - CENT:
+                    later.append("cash: leaves %s cash, under your %s%% buffer of %s"
+                                 % (money(max(after_cash, 0)), _pct(c["cash_buffer_pct"]), money(buffer_usd)))
+                pos_after = held_value + value
+                limit = total * float(c.get("max_position_pct") or 100) / 100.0
+                if total > 0 and pos_after > limit + CENT:
+                    later.append("position: %s would be %s, %.1f%% of the %s account, over your %s%% cap"
+                                 % (sym, money(pos_after), 100.0 * pos_after / total, money(total),
+                                    _pct(c["max_position_pct"])))
         if side == "sell" and sym and kind == "entry":
             if q is not None:
                 over = q > held + 1e-9
@@ -574,12 +618,15 @@ def check(orders, cfg, portfolio=None, prices=None, state=None, today=None, now=
             leg_stop, plan_stop = _f(o.get("stop_loss_stop_price")), _f(plan.get("stop"))
             stop = leg_stop if leg_stop else plan_stop
             target = _f(o.get("take_profit_limit_price")) or _f(plan.get("target"))
-            if leg_stop and plan_stop and abs(leg_stop - plan_stop) > CENT:
+            is_micro = bool(c.get("allow_all_markets") and ref and (ref < 10.0 or "=" in sym))
+            eps_p = 1e-6 if is_micro else CENT
+            pfmt = _fmt_p if is_micro else _p
+            if leg_stop and plan_stop and abs(leg_stop - plan_stop) > eps_p:
                 warns.append("the bracket stop %s differs from the plan's stop %s: the bracket's is the one "
-                             "the broker uses" % (_p(leg_stop), _p(plan_stop)))
+                             "the broker uses" % (pfmt(leg_stop), pfmt(plan_stop)))
             if stop and not leg_stop:
                 warns.append("the stop %s is in the plan only, not at the broker: set a stop alert "
-                             "(trader-alerts: alerts.py add --from-plan)" % _p(stop))
+                             "(trader-alerts: alerts.py add --from-plan)" % pfmt(stop))
             if not stop:
                 if c.get("require_stop", True):
                     later.append("stop: no stop. Every entry needs one (\"require_stop\": true): a bracket "
@@ -587,69 +634,77 @@ def check(orders, cfg, portfolio=None, prices=None, state=None, today=None, now=
                 else:
                     warns.append("no stop: the max loss is not capped, so it is not counted in the daily loss")
             elif ref:
-                if (long and stop >= ref - CENT) or (not long and stop <= ref + CENT):
+                if (long and stop >= ref - eps_p) or (not long and stop <= ref + eps_p):
                     later.append("stop: the stop %s must be %s the entry %s for a %s"
-                                 % (_p(stop), "below" if long else "above", _p(ref), side))
+                                 % (pfmt(stop), "below" if long else "above", pfmt(ref), side))
                 else:
-                    risk_c = int(round(abs(ref - stop) * 100))
-                    risk_ps = risk_c / 100.0
+                    if is_micro:
+                        risk_ps = round(abs(ref - stop), 6)
+                    else:
+                        risk_c = int(round(abs(ref - stop) * 100))
+                        risk_ps = risk_c / 100.0
                     shares = q if q is not None else ((value or 0) / ref)
                     max_loss = round(shares * risk_ps, 2)
                     cap = _f(c.get("max_loss_per_trade_usd"))
-                    if cap and max_loss > cap + CENT:
+                    if cap and not unlim and max_loss > cap + CENT:
                         later.append("loss: %s shares x %s risk a share = %s at the stop, over your %s max loss "
-                                     "per trade" % (_num(shares), _p(risk_ps), money(max_loss), money(cap)))
+                                     "per trade" % (_num(shares), pfmt(risk_ps), money(max_loss), money(cap)))
                     min_rr = _f(c.get("min_reward_risk"))
                     if target:
-                        if (long and target <= ref + CENT) or (not long and target >= ref - CENT):
+                        if (long and target <= ref + eps_p) or (not long and target >= ref - eps_p):
                             later.append("target: the target %s must be %s the entry %s"
-                                         % (_p(target), "above" if long else "below", _p(ref)))
+                                         % (pfmt(target), "above" if long else "below", pfmt(ref)))
                         else:
-                            rr = round(int(round(abs(target - ref) * 100)) / float(risk_c), 2)
+                            if is_micro:
+                                rr = round(abs(target - ref) / abs(ref - stop), 2)
+                            else:
+                                rr = round(int(round(abs(target - ref) * 100)) / float(risk_c), 2)
                             if min_rr and rr < min_rr - 1e-9:
                                 later.append("reward:risk: %.2f (target %s, entry %s, stop %s) is under your "
-                                             "minimum %s" % (rr, _p(target), _p(ref), _p(stop), _num(min_rr)))
+                                             "minimum %s" % (rr, pfmt(target), pfmt(ref), pfmt(stop), _num(min_rr)))
                     elif min_rr:
                         later.append("reward:risk: no target to measure it against (min_reward_risk %s)"
                                      % _num(min_rr))
             daily = _f(c.get("max_daily_loss_usd"))
-            if daily and max_loss is not None:
+            if daily and not unlim and max_loss is not None:
                 used = loss_today + batch_loss
                 if used + max_loss > daily + CENT:
                     later.append("daily loss: %s already at risk today plus %s for this one = %s, over your %s "
                                  "daily loss limit" % (money(used), money(max_loss), money(used + max_loss),
                                                        money(daily)))
-            cap_t = int(c.get("max_trades_per_day") or 0)
+            cap_t = 0 if unlim else int(c.get("max_trades_per_day") or 0)
             if cap_t and len(entries_today) + batch_entries >= cap_t:
                 later.append("trades: %d entries placed today plus %d passed earlier in this batch, your limit "
                              "is %d a day" % (len(entries_today), batch_entries, cap_t))
-            later.extend(win_reasons)
+            sym_win_reasons, sym_win_warns = window_check_symbol(now_et, c, sym) if c.get("allow_all_markets") else (win_reasons, win_warns)
+            later.extend(sym_win_reasons)
             if c.get("pdt_guard") and pdt_n >= 3:
                 later.append("pdt: %d day trades in the last 5 business days (%s); a 4th trips the "
                              "pattern-day-trader rule your broker applies (\"pdt_guard\": true)"
                              % (pdt_n, ", ".join(pdt_list)))
             if stop and ref and risk_ps:
                 info.append("entry %s (%s), stop %s, target %s: risk %s a share"
-                            % (_p(ref), REF_WORDS.get(ref_from, ref_from), _p(stop),
-                               _p(target) if target else "none", _p(risk_ps)))
+                            % (pfmt(ref), REF_WORDS.get(ref_from, ref_from), pfmt(stop),
+                               pfmt(target) if target else "none", pfmt(risk_ps)))
                 info.append("max loss %s%s, reward:risk %s%s"
                             % (money(max_loss), (" (limit %s)" % money(c["max_loss_per_trade_usd"]))
                                if _f(c.get("max_loss_per_trade_usd")) else "",
                                ("%.2f" % rr) if rr is not None else "n/a",
                                (" (min %s)" % _num(c["min_reward_risk"])) if _f(c.get("min_reward_risk")) else ""))
-            if daily or cap_t:
+            if daily or cap_t or unlim:
                 info.append("today before this: %d of %s trades, %s of %s daily loss"
-                            % (len(entries_today) + batch_entries, cap_t or "unlimited",
-                               money(loss_today + batch_loss), money(daily) if daily else "no limit on"))
+                            % (len(entries_today) + batch_entries, "unlimited" if unlim else (cap_t or "unlimited"),
+                               money(loss_today + batch_loss), "no limit on" if unlim else (money(daily) if daily else "no limit on")))
 
         # duplicates and the daily order limit
         key = (sym, side)
-        if key in seen:
-            later.append("duplicate: a second %s %s in this batch" % (side, sym))
-        if key in placed_keys:
-            later.append("duplicate: a %s %s was already placed today" % (side, sym))
+        if not unlim:
+            if key in seen:
+                later.append("duplicate: a second %s %s in this batch" % (side, sym))
+            if key in placed_keys:
+                later.append("duplicate: a %s %s was already placed today" % (side, sym))
         passed_so_far = sum(1 for r in results if r["verdict"] == "PASS")
-        cap_n = int(c.get("max_orders_per_day") or 0)
+        cap_n = 0 if unlim else int(c.get("max_orders_per_day") or 0)
         if cap_n and count_today + passed_so_far >= cap_n:
             later.append("daily limit: %d placed today plus %d passed earlier in this batch, "
                          "your limit is %d a day" % (count_today, passed_so_far, cap_n))
@@ -685,7 +740,7 @@ def check(orders, cfg, portfolio=None, prices=None, state=None, today=None, now=
             "index": i, "symbol": sym, "side": side, "kind": kind,
             "amount": money(_f(notional) or 0) if notional is not None else ("%s shares" % qty),
             "value_usd": round(value, 2) if value is not None else None,
-            "entry_ref": round(ref, 2) if ref else None, "entry_ref_from": ref_from,
+            "entry_ref": round(ref, 6 if (c.get("allow_all_markets") and ref < 10.0) else 2) if ref else None, "entry_ref_from": ref_from,
             "stop": stop, "target": target, "risk_per_share": risk_ps, "max_loss": max_loss,
             "reward_risk": rr, "fingerprint": fingerprint(o), "verdict": verdict,
             "reasons": reasons, "warnings": warns, "info": info,

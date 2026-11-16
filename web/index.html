@@ -100,6 +100,19 @@
       </div>
     </header>
 
+    <!-- Global Market Sessions Bar -->
+    <section class="global-sessions-bar" id="global-sessions-bar">
+      <div class="sessions-label">🌍 Global Markets 24/7:</div>
+      <div class="sessions-pills" id="global-sessions-pills">
+        <span class="session-chip open">₿ Crypto 24/7</span>
+        <span class="session-chip open">💱 Forex 24/5</span>
+        <span class="session-chip open">🛢️ Futures 24/5</span>
+        <span class="session-chip">🇺🇸 US Equities</span>
+        <span class="session-chip">🇪🇺 Europe / UK</span>
+        <span class="session-chip">🌏 Asia-Pacific</span>
+      </div>
+    </section>
+
     <!-- KPI Metric Summary Bar -->
     <section class="kpi-banner">
       <div class="kpi-card">
@@ -122,19 +135,19 @@
       <div class="kpi-card">
         <div class="kpi-label">Account Capital &amp; Risk</div>
         <div class="kpi-value-row">
-          <span class="kpi-value text-emerald">$5,000.00</span>
-          <span class="kpi-tag">Paper</span>
+          <span class="kpi-value text-emerald" id="kpi-capital-val">$5,000.00</span>
+          <span class="kpi-tag" id="kpi-capital-mode">Paper</span>
         </div>
-        <div class="kpi-sub">Max Risk/Trade: <strong>$50.00</strong> (1%)</div>
+        <div class="kpi-sub" id="kpi-capital-sub">Buying Power: $5,000.00 | Risk: $50.00</div>
       </div>
 
       <div class="kpi-card">
-        <div class="kpi-label">Watchlist Radar</div>
+        <div class="kpi-label">All-Markets &amp; US Universe</div>
         <div class="kpi-value-row">
-          <span class="kpi-value" id="kpi-watchlist-count">9</span>
-          <span class="kpi-tag tag-blue" id="kpi-triggered-count">1 Triggered</span>
+          <span class="kpi-value" id="kpi-watchlist-count">18</span>
+          <span class="kpi-tag tag-blue" id="kpi-triggered-count">0 Triggered</span>
         </div>
-        <div class="kpi-sub">5m Opening Range Breakouts</div>
+        <div class="kpi-sub" id="kpi-universe-progress">5,930-Co US Universe + Global Markets</div>
       </div>
 
       <div class="kpi-card">
@@ -142,7 +155,7 @@
         <div class="kpi-value-row">
           <span class="kpi-value" id="kpi-alerts-count">3 Armed</span>
         </div>
-        <div class="kpi-sub" id="kpi-alerts-sub">Target, Stop &amp; 15:55 Bell</div>
+        <div class="kpi-sub" id="kpi-alerts-sub">Target, Stop &amp; Time Alarms</div>
       </div>
 
       <div class="kpi-card">
@@ -150,27 +163,28 @@
         <div class="kpi-value-row">
           <span class="verdict-pill pill-pass" id="kpi-risk-badge">PASS</span>
         </div>
-        <div class="kpi-sub" id="kpi-risk-sub">8 Checks Cleared</div>
+        <div class="kpi-sub" id="kpi-risk-sub">All Markets &amp; Unlimited Cleared</div>
       </div>
 
       <div class="kpi-card kpi-ai-clickable" onclick="switchTab('ai')" style="cursor: pointer;" title="Open Autonomous AI Agent 24/7 Dashboard">
         <div class="kpi-label">AI Auto-Pilot 24/7</div>
         <div class="kpi-value-row">
           <span class="verdict-pill pill-pass" id="kpi-ai-badge">ACTIVE</span>
-          <span class="kpi-tag tag-blue" id="kpi-ai-thresh">80% Gate</span>
+          <span class="kpi-tag tag-blue" id="kpi-ai-thresh">65% Gate</span>
+          <span class="kpi-tag tag-unlimited" id="kpi-ai-unlimited-tag">UNLIMITED</span>
         </div>
-        <div class="kpi-sub" id="kpi-ai-sub">0 Actions Today | Auto-Protect ON</div>
+        <div class="kpi-sub" id="kpi-ai-sub">0 Actions | All Markets 24/7</div>
       </div>
     </section>
 
-    <!-- Visual 8-Step Pipeline Tracker -->
+    <!-- Visual 11-Skill Pipeline Tracker -->
     <section class="pipeline-section">
       <div class="section-title-row">
         <div class="section-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
           </svg>
-          Continuous 8-Skill Trading Pipeline
+          Continuous 11-Skill Global Trading Pipeline (All Markets + 5,930 US Companies)
         </div>
         <div class="pipeline-legend">
           <span class="legend-item"><span class="legend-dot dot-ready"></span> Ready</span>
@@ -184,7 +198,7 @@
           <div class="node-step">01</div>
           <div class="node-name">Scanner</div>
           <div class="node-tool">trader-scanner</div>
-          <div class="node-status" id="node-scanner-status">Scanned 231</div>
+          <div class="node-status" id="node-scanner-status">Scanning Global</div>
         </div>
 
         <div class="pipeline-connector"></div>
@@ -193,7 +207,7 @@
           <div class="node-step">02</div>
           <div class="node-name">News &amp; 8-K</div>
           <div class="node-tool">trader-news</div>
-          <div class="node-status" id="node-news-status">Headlines Synced</div>
+          <div class="node-status" id="node-news-status">Multi-Market RSS</div>
         </div>
 
         <div class="pipeline-connector"></div>
@@ -202,7 +216,7 @@
           <div class="node-step">03</div>
           <div class="node-name">Entry Timer</div>
           <div class="node-tool">trader-entry</div>
-          <div class="node-status" id="node-entry-status">TSLA Triggered</div>
+          <div class="node-status" id="node-entry-status">Breakout Timing</div>
         </div>
 
         <div class="pipeline-connector"></div>
@@ -211,7 +225,7 @@
           <div class="node-step">04</div>
           <div class="node-name">Exit Planner</div>
           <div class="node-tool">trader-exit</div>
-          <div class="node-status" id="node-exit-status">Stop $358.32 / 1R</div>
+          <div class="node-status" id="node-exit-status">Dynamic Stops/1R</div>
         </div>
 
         <div class="pipeline-connector"></div>
@@ -220,7 +234,7 @@
           <div class="node-step">05</div>
           <div class="node-name">Time Machine</div>
           <div class="node-tool">trader-timemachine</div>
-          <div class="node-status" id="node-timemachine-status">10k Replays Run</div>
+          <div class="node-status" id="node-timemachine-status">10k Replays</div>
         </div>
 
         <div class="pipeline-connector"></div>
@@ -229,7 +243,7 @@
           <div class="node-step">06</div>
           <div class="node-name">Budget Sizer</div>
           <div class="node-tool">trader-budget</div>
-          <div class="node-status" id="node-budget-status">8 Shares ($46.88 Risk)</div>
+          <div class="node-status" id="node-budget-status">Fractional Sizer</div>
         </div>
 
         <div class="pipeline-connector"></div>
@@ -238,7 +252,7 @@
           <div class="node-step">07</div>
           <div class="node-name">Risk Manager</div>
           <div class="node-tool">trader-risk</div>
-          <div class="node-status status-pass" id="node-risk-status">PASS Clearance</div>
+          <div class="node-status status-pass" id="node-risk-status">PASS Unlimited</div>
         </div>
 
         <div class="pipeline-connector"></div>
@@ -247,7 +261,34 @@
           <div class="node-step">08</div>
           <div class="node-name">Order Ticket</div>
           <div class="node-tool">trader-broker</div>
-          <div class="node-status" id="node-broker-status">Paper Bracket Ready</div>
+          <div class="node-status" id="node-broker-status">Multi-Asset Ready</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node active" id="node-alerts" onclick="switchTab('alerts')">
+          <div class="node-step">09</div>
+          <div class="node-name">Alerts Daemon</div>
+          <div class="node-tool">trader-alerts</div>
+          <div class="node-status" id="node-alerts-status">Armed &amp; Live</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node active" id="node-analyst" onclick="openAnalystModal()">
+          <div class="node-step">10</div>
+          <div class="node-name">SEC Analyst</div>
+          <div class="node-tool">trader-analyst</div>
+          <div class="node-status" id="node-analyst-status">XBRL Ready</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node active" id="node-pelosi" onclick="switchTab('pelosi')">
+          <div class="node-step">11</div>
+          <div class="node-name">Pelosi PTR</div>
+          <div class="node-tool">trader-pelosi</div>
+          <div class="node-status" id="node-pelosi-status">House Clerk Sync</div>
         </div>
       </div>
     </section>
@@ -306,29 +347,55 @@
         <div class="panel-card">
           <div class="panel-header">
             <div class="panel-title">
-              <h3>Watchlist &amp; 15-Minute Opening Range Breakout (ORB) Radar</h3>
-              <p class="panel-desc">Monitors 5-minute candles closing above the opening range (9:30 - 9:45 ET). Triggers only on completed bar closes.</p>
+              <h3>All-Markets Watchlist, Global Company Search &amp; Breakout Radar</h3>
+              <p class="panel-desc">Monitors US Equities (5,930-company universe), Global Stocks (.T, .HK, .L, .AS, .DE), Crypto 24/7, Forex 24/5, Commodities, Indices &amp; ETFs simultaneously.</p>
             </div>
             <div class="panel-tools">
               <form class="add-symbol-form" onsubmit="addSymbolFromInput(event)">
-                <input type="text" id="input-symbol" placeholder="Add Ticker (e.g. QQQ, EURUSD)" maxlength="10">
+                <input type="text" id="input-symbol" placeholder="Add Ticker (BTC-USD, 7203.T, EURUSD=X)" maxlength="32">
                 <button type="submit" class="btn btn-secondary btn-sm">+ Add</button>
               </form>
             </div>
           </div>
 
+          <!-- Global Company & Market Search Bar -->
+          <div class="market-search-box">
+            <form class="market-search-form" onsubmit="searchMarkets(event)">
+              <input type="text" id="input-market-search" placeholder="Search ANY company, crypto, currency, commodity, or exchange ticker (e.g. Toyota, LVMH, Bitcoin, Gold, ^GSPC, Samsung)..." oninput="debouncedMarketSearch(this.value)">
+              <button type="submit" class="btn btn-primary btn-sm">🔍 Search All Markets</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="scanUniverseNow()">🔎 Sweep 500 US Cos</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="refreshUniverseNow()">🔄 Sync 5,930-Co List</button>
+            </form>
+            <div class="search-results-dropdown hidden" id="market-search-results"></div>
+          </div>
+
           <!-- Quick Watchlist Preset Category Switcher -->
           <div class="watchlist-filter-bar">
-            <span class="filter-label">Quick Watchlist Presets:</span>
+            <span class="filter-label">Market Presets:</span>
             <div class="preset-btn-group">
-              <button type="button" class="btn-preset active" id="btn-wl-equities" onclick="loadWatchlistPreset('equities')">
-                📈 US Equities (Mega-Cap)
+              <button type="button" class="btn-preset active" id="btn-wl-all_markets" onclick="loadWatchlistPreset('all_markets')">
+                🌐 All Markets Multi-Asset
+              </button>
+              <button type="button" class="btn-preset" id="btn-wl-us_equities" onclick="loadWatchlistPreset('us_equities')">
+                🇺🇸 US Mega-Cap
+              </button>
+              <button type="button" class="btn-preset" id="btn-wl-us_universe" onclick="loadWatchlistPreset('us_universe')">
+                🏛️ US 5,930-Co Sample
+              </button>
+              <button type="button" class="btn-preset" id="btn-wl-global_equities" onclick="loadWatchlistPreset('global_equities')">
+                🌍 Global Intl (.T, .HK, .L, .AS)
+              </button>
+              <button type="button" class="btn-preset" id="btn-wl-crypto" onclick="loadWatchlistPreset('crypto')">
+                ₿ Crypto 24/7
               </button>
               <button type="button" class="btn-preset" id="btn-wl-forex" onclick="loadWatchlistPreset('forex')">
-                💱 Forex &amp; Currencies (EUR/USD, GBP/USD, USD/JPY, UUP, FXE, GLD)
+                💱 Forex 24/5
               </button>
-              <button type="button" class="btn-preset" id="btn-wl-all" onclick="loadWatchlistPreset('all')">
-                🌐 All Assets (Equities + Forex)
+              <button type="button" class="btn-preset" id="btn-wl-commodities" onclick="loadWatchlistPreset('commodities')">
+                🛢️ Commodities &amp; Futures
+              </button>
+              <button type="button" class="btn-preset" id="btn-wl-indices_bonds" onclick="loadWatchlistPreset('indices_bonds')">
+                📊 Indices &amp; Bonds
               </button>
             </div>
           </div>
@@ -338,16 +405,48 @@
               <thead>
                 <tr>
                   <th>Symbol</th>
+                  <th>Market</th>
                   <th>Current Price</th>
                   <th>Day Move</th>
-                  <th>15m Range (Low - High)</th>
-                  <th>ORB Status</th>
+                  <th>Range (Low - High)</th>
+                  <th>Status / Trigger</th>
                   <th>Volume Multiple</th>
-                  <th>Action</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="watchlist-tbody">
                 <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Discovered US Full-Market Universe Breakouts -->
+        <div class="panel-card" style="margin-top: 20px;" id="universe-hits-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h3>US Full-Market Universe Scanner Hits (5,930 Nasdaq/NYSE/AMEX Companies)</h3>
+              <p class="panel-desc">Rotating sweep across all listed US stocks &amp; ADRs via trader-scanner universe discovery. High-conviction breakouts automatically enter AI &amp; News evaluation.</p>
+            </div>
+            <div class="panel-tools">
+              <span class="kpi-tag tag-blue" id="universe-progress-badge">0 / 5,930 Scanned</span>
+              <button class="btn btn-secondary btn-sm" onclick="scanUniverseNow()">⚡ Scan Next Batch</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="universe-hits-table">
+              <thead>
+                <tr>
+                  <th>Ticker</th>
+                  <th>Price</th>
+                  <th>Setup / Signal</th>
+                  <th>RSI / Tech</th>
+                  <th>Volume</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="universe-hits-tbody">
+                <tr><td colspan="6" class="text-muted">Click "Sweep 500 US Cos" or wait for background rotation cycle to populate full-market breakout hits.</td></tr>
               </tbody>
             </table>
           </div>
@@ -360,10 +459,16 @@
           <div class="panel-card">
             <div class="panel-header">
               <div class="panel-title">
-                <h3>Monte Carlo 10,000-Replay Engine</h3>
-                <p class="panel-desc">Replays the remainder of the trading day 10,000 times drawn from the stock's actual 5-minute historical candles at that exact time of day.</p>
+                <h3>Monte Carlo 10,000-Replay Engine (<span id="tm-target-symbol-label">Active Setup</span>)</h3>
+                <p class="panel-desc">Replays the remainder of the trading day 10,000 times drawn from actual 5-minute historical candles for any stock, crypto, FX pair, or commodity.</p>
               </div>
-              <div class="seed-badge" id="tm-seed-badge">Seed: 19 (Deterministic)</div>
+              <div class="panel-tools" style="gap: 8px;">
+                <form class="add-symbol-form" onsubmit="runTimeMachineForSymbol(event)">
+                  <input type="text" id="tm-symbol-input" placeholder="Symbol (e.g. BTC-USD, NVDA)" maxlength="32" style="width: 170px;">
+                  <button type="submit" class="btn btn-primary btn-sm">▶ Run 10k Replays</button>
+                </form>
+                <div class="seed-badge" id="tm-seed-badge">Seed: 19 (Deterministic)</div>
+              </div>
             </div>
 
             <div class="tm-odds-grid">
@@ -463,11 +568,16 @@
           <div class="panel-card">
             <div class="panel-header">
               <div class="panel-title">
-                <h3>Broker Order Ticket (Alpaca Paper Trading)</h3>
-                <p class="panel-desc">Bracket orders require explicit approval. Nothing is routed without PASS clearance.</p>
+                <h3>Broker Order Ticket (Multi-Asset &amp; Paper Safe)</h3>
+                <p class="panel-desc">Stage or execute orders for any stock, crypto, forex pair, commodity, ETF, or global symbol with instant risk calculation.</p>
               </div>
-              <span class="tag-paper">Paper Default</span>
+              <span class="tag-paper" id="ticket-asset-tag">Multi-Asset</span>
             </div>
+
+            <form class="quick-trade-form" onsubmit="quickTradeFromInput(event)" style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+              <input type="text" id="quick-trade-symbol" placeholder="Trade any symbol now (e.g. BTC-USD, 7203.T, AAPL, GC=F, EURUSD=X)" maxlength="32" style="flex:1; min-width:200px;">
+              <button type="submit" class="btn btn-primary btn-sm">⚡ Execute Symbol Now</button>
+            </form>
 
             <div class="order-ticket-container" id="order-ticket-container">
               <div class="ticket-header">
@@ -530,7 +640,7 @@
               <span class="verdict-pill pill-pass" id="risk-audit-badge">PASS</span>
             </div>
 
-            <div class="risk-checklist">
+            <div class="risk-checklist" id="risk-checklist">
               <div class="risk-check-item passed">
                 <div class="risk-check-icon">✓</div>
                 <div class="risk-check-content">
@@ -605,7 +715,8 @@
               <thead>
                 <tr>
                   <th>Symbol</th>
-                  <th>Shares</th>
+                  <th>Market</th>
+                  <th>Qty / Shares</th>
                   <th>Entry Price</th>
                   <th>Current Price</th>
                   <th>Stop Price</th>
@@ -666,7 +777,15 @@
           <div class="panel-header">
             <div class="panel-title">
               <h3>Breaking News, Market Movers &amp; SEC 8-K Filings</h3>
-              <p class="panel-desc">Real-time headlines and filings for watchlist stocks. Automatically tagged for earnings, mergers, analyst actions, and regulatory filings.</p>
+              <p class="panel-desc">Real-time multi-market Yahoo RSS headlines and SEC EDGAR 8-K filings across US &amp; global companies, crypto, forex, and commodities.</p>
+            </div>
+            <div class="panel-tools" style="gap: 8px; flex-wrap: wrap;">
+              <form class="add-symbol-form" onsubmit="fetchNewsNow(event)">
+                <input type="text" id="news-fetch-symbol" placeholder="Fetch ticker news (e.g. BTC-USD, 7203.T)" maxlength="32" style="width: 220px;">
+                <button type="submit" class="btn btn-primary btn-sm">📰 Fetch Breaking News</button>
+              </form>
+              <input type="text" id="news-filter-input" placeholder="Filter loaded feed..." oninput="renderNewsFilter()" style="width: 150px;">
+              <span class="kpi-tag tag-blue" id="news-count-badge">0 Items</span>
             </div>
           </div>
 
@@ -702,8 +821,8 @@
 
             <form class="alert-form" onsubmit="createNewAlert(event)">
               <div class="form-group">
-                <label for="alert-symbol">Ticker Symbol</label>
-                <input type="text" id="alert-symbol" placeholder="TSLA" required maxlength="6">
+                <label for="alert-symbol">Ticker / Market Symbol</label>
+                <input type="text" id="alert-symbol" placeholder="TSLA, BTC-USD, EURUSD=X, 7203.T" required maxlength="32">
               </div>
 
               <div class="form-group">
@@ -718,7 +837,7 @@
 
               <div class="form-group" id="group-price">
                 <label for="alert-price">Target / Stop Price ($)</label>
-                <input type="number" step="0.01" id="alert-price" placeholder="370.04">
+                <input type="number" step="any" id="alert-price" placeholder="370.04 or 1.0850">
               </div>
 
               <div class="form-group hidden" id="group-pct">
@@ -769,6 +888,28 @@
 
       <!-- TAB 7: STRATEGY & SCALPING (1M FAST CANDLES & FOREX) -->
       <div class="tab-pane" id="pane-strategy">
+        <!-- All-Markets 24/7 Unlimited Strategy Card -->
+        <div class="panel-card strategy-card" id="strat-all-markets" style="margin-bottom: 18px;">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="strategy-badge badge-fast">🌐 Global 24/7 Multi-Asset</div>
+              <h3>All-Markets 24/7 Unlimited Autonomous Strategy</h3>
+              <p class="panel-desc">Trades US Equities (5,930-co universe), Global Markets (.T, .HK, .L, .AS, .DE), Crypto 24/7, Forex 24/5, Commodities, Indices &amp; ETFs simultaneously with zero daily trade caps.</p>
+            </div>
+            <span class="status-badge status-triggered" id="badge-strat-all">ACTIVE SETUP</span>
+          </div>
+          <div class="strategy-specs-grid">
+            <div class="spec-item"><span class="spec-label">Daily AI Order Cap</span><span class="spec-val text-emerald">UNLIMITED (0 Cap)</span></div>
+            <div class="spec-item"><span class="spec-label">Market Coverage</span><span class="spec-val text-cyan">Equities, Global, Crypto, FX, Futures</span></div>
+            <div class="spec-item"><span class="spec-label">Trading Hours</span><span class="spec-val text-emerald">00:00 - 23:59 (24/7 Multi-Session)</span></div>
+            <div class="spec-item"><span class="spec-label">Order Sizing</span><span class="spec-val">Fractional + Multi-Asset Brackets</span></div>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;">
+            <button class="btn btn-primary" onclick="activateStrategyPreset('all_markets_24_7')">🌐 Activate All-Markets 24/7 Unlimited</button>
+            <button class="btn btn-execute" onclick="triggerAIEvaluationNow()">🤖 Trigger Immediate All-Markets AI Evaluation</button>
+          </div>
+        </div>
+
         <div class="strategy-grid-3">
           <!-- 1m Fast Scalping Setup -->
           <div class="panel-card strategy-card active-strategy" id="strat-fast-1m">
@@ -934,8 +1075,8 @@
                   <span class="ai-beacon-dot"></span>
                   <span class="ai-beacon-label">AUTONOMOUS 24/7 AGENT CORE</span>
                 </div>
-                <h3>Autonomous AI Trade Execution &amp; Risk Protection</h3>
-                <p class="panel-desc">Operating on your behalf 24 hours a day, 5 days a week. Continuously scores watchlist setups, routes bracket entries at high multi-factor conviction (&gt;=80%), automatically trails stops to Breakeven (+1.0R) to eliminate risk, banks profit targets, and flattens equities prior to market close.</p>
+                <h3>Autonomous AI Trade Execution &amp; Unlimited 24/7 Radar</h3>
+                <p class="panel-desc">Operates 24/7 across all asset classes (Crypto 24/7, Forex 24/5, Futures, Global Equities, and US 5,930-co universe). Evaluates multi-factor setups with breaking news catalysts and places unlimited autonomous bracket orders when Unlimited Orders is ON.</p>
               </div>
               <div class="panel-tools ai-hero-tools">
                 <button class="btn btn-ai-toggle-large active" id="btn-pane-ai-toggle" onclick="toggleAIAutoPilot()">
@@ -954,25 +1095,25 @@
               <div class="ai-metric-box">
                 <div class="ai-metric-lbl">Agent Operating State</div>
                 <div class="ai-metric-val text-emerald" id="ai-metric-status">Autonomous Scanning 24/7</div>
-                <div class="ai-metric-sub">Runs Every Engine Cycle</div>
+                <div class="ai-metric-sub">All 11 Skills Active Every Cycle</div>
               </div>
 
               <div class="ai-metric-box">
-                <div class="ai-metric-lbl">Conviction Gate</div>
-                <div class="ai-metric-val text-cyan" id="ai-metric-threshold">80% Minimum</div>
-                <div class="ai-metric-sub">4-Factor Quantitative Verification</div>
+                <div class="ai-metric-lbl">Order Capacity &amp; Gate</div>
+                <div class="ai-metric-val text-cyan" id="ai-metric-threshold">65% | UNLIMITED</div>
+                <div class="ai-metric-sub" id="ai-metric-limits-sub">No Daily Order/Position Ceiling</div>
               </div>
 
               <div class="ai-metric-box">
-                <div class="ai-metric-lbl">Autonomous Actions Today</div>
-                <div class="ai-metric-val text-amber" id="ai-metric-actions">0 Executions</div>
+                <div class="ai-metric-lbl">Autonomous Orders Fired</div>
+                <div class="ai-metric-val text-amber" id="ai-metric-actions">0 Orders</div>
                 <div class="ai-metric-sub" id="ai-metric-last-action">Last: None</div>
               </div>
 
               <div class="ai-metric-box">
                 <div class="ai-metric-lbl">Protection Protocols</div>
-                <div class="ai-metric-val text-emerald">Active &amp; Guarded</div>
-                <div class="ai-metric-sub">Breakeven Lock + EOD Flatten</div>
+                <div class="ai-metric-val text-emerald" id="ai-metric-protections">Breakeven + Bracket Stops</div>
+                <div class="ai-metric-sub">Per-Position Target &amp; Stop Exit</div>
               </div>
             </div>
           </div>
@@ -1039,26 +1180,45 @@
                   <div class="form-group">
                     <div class="label-with-val">
                       <label for="input-ai-threshold">Minimum Conviction Threshold to Fire Orders:</label>
-                      <span class="range-val-badge" id="ai-threshold-val">80%</span>
+                      <span class="range-val-badge" id="ai-threshold-val">65%</span>
                     </div>
-                    <input type="range" id="input-ai-threshold" min="50" max="95" step="5" value="80" oninput="document.getElementById('ai-threshold-val').textContent = this.value + '%'">
-                    <span class="form-hint">Orders execute autonomously ONLY when total 4-factor conviction score matches or exceeds this threshold.</span>
+                    <input type="range" id="input-ai-threshold" min="45" max="95" step="5" value="65" oninput="document.getElementById('ai-threshold-val').textContent = this.value + '%'">
+                    <span class="form-hint">Orders execute autonomously whenever multi-factor technical + news conviction meets or exceeds this gate.</span>
+                  </div>
+
+                  <div class="grid-2col" style="gap: 10px; margin-bottom: 12px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label for="input-ai-max-positions">Max Concurrent Positions (0 = Unlimited)</label>
+                      <input type="number" id="input-ai-max-positions" min="0" max="10000" step="1" value="0">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label for="input-ai-max-cycle">Max Orders Per Cycle (0 = Unlimited)</label>
+                      <input type="number" id="input-ai-max-cycle" min="0" max="1000" step="1" value="0">
+                    </div>
                   </div>
 
                   <div class="checkbox-group-styled">
                     <label class="custom-checkbox-row">
-                      <input type="checkbox" id="input-ai-breakeven" checked>
+                      <input type="checkbox" id="input-ai-unlimited" checked>
                       <div class="checkbox-text">
-                        <strong>🛡️ Auto Trailing Stop to Breakeven (+1.0R Lock)</strong>
-                        <span>When unrealized gain reaches +1.0R, AI instantly trails stop loss to entry price, eliminating downside risk completely.</span>
+                        <strong>♾️ Unlimited AI Orders &amp; All-Market Scaling</strong>
+                        <span>Removes daily order/trade caps, single-trade-per-cycle bottlenecks, and allows trading every qualified setup simultaneously across all markets.</span>
                       </div>
                     </label>
 
                     <label class="custom-checkbox-row">
-                      <input type="checkbox" id="input-ai-flatten" checked>
+                      <input type="checkbox" id="input-ai-breakeven" checked>
                       <div class="checkbox-text">
-                        <strong>⏰ Auto End-Of-Day Cutoff Flattening (15:55 ET)</strong>
-                        <span>Automatically liquidates all intraday stock day-trades before 16:00 ET close to prevent overnight gap risk.</span>
+                        <strong>🛡️ Auto Trailing Stop to Breakeven (+1.0R Lock)</strong>
+                        <span>When unrealized gain reaches +1.0R, AI trails stop loss to entry price per position without disrupting other trades.</span>
+                      </div>
+                    </label>
+
+                    <label class="custom-checkbox-row">
+                      <input type="checkbox" id="input-ai-flatten">
+                      <div class="checkbox-text">
+                        <strong>⏰ Auto End-Of-Day Stock Flatten (15:55 ET)</strong>
+                        <span>Closes US stock positions prior to NYSE 16:00 ET close (leaves 24/7 crypto, 24/5 forex, and global markets open).</span>
                       </div>
                     </label>
                   </div>
@@ -1116,36 +1276,42 @@
             <div class="settings-grid">
               <!-- Section 1: Daily Limits -->
               <div class="settings-section">
-                <div class="settings-section-title">📊 Daily Trade &amp; Risk Limits</div>
+                <div class="settings-section-title">📊 Daily Trade &amp; Risk Limits (0 = Unlimited)</div>
 
                 <div class="form-group">
-                  <label for="cfg-max-trades">Max Trades Per Day</label>
-                  <input type="number" id="cfg-max-trades" min="1" max="50" step="1" required>
-                  <span class="form-hint">Maximum number of executed round-trip day trades allowed per session.</span>
+                  <label for="cfg-max-trades">Max Trades Per Day (0 = Unlimited)</label>
+                  <input type="number" id="cfg-max-trades" min="0" max="100000" step="1" required>
+                  <span class="form-hint">Set 0 for Unlimited AI &amp; manual round-trip trades per day.</span>
                 </div>
 
                 <div class="form-group">
-                  <label for="cfg-max-orders">Max Orders Per Day</label>
-                  <input type="number" id="cfg-max-orders" min="1" max="100" step="1" required>
-                  <span class="form-hint">Hard ceiling on total submitted orders (including bracket legs).</span>
+                  <label for="cfg-max-orders">Max Orders Per Day (0 = Unlimited)</label>
+                  <input type="number" id="cfg-max-orders" min="0" max="100000" step="1" required>
+                  <span class="form-hint">Set 0 for Unlimited total submitted orders across all markets.</span>
                 </div>
 
                 <div class="form-group">
                   <label for="cfg-budget">Total Account Budget ($)</label>
                   <input type="number" id="cfg-budget" min="100" step="100" required>
-                  <span class="form-hint">Trading equity for position sizing and cash buffer math.</span>
+                  <span class="form-hint">Trading equity for position sizing and buying power allocation.</span>
                 </div>
 
                 <div class="form-group">
                   <label for="cfg-max-loss-trade">Max Loss Per Trade ($)</label>
-                  <input type="number" id="cfg-max-loss-trade" min="5" step="5" required>
-                  <span class="form-hint">Dollar loss at the stop price. Sizer calculates shares: max_loss / risk_per_share.</span>
+                  <input type="number" id="cfg-max-loss-trade" min="1" step="5" required>
+                  <span class="form-hint">Dollar loss at stop price. Sizer computes shares/fractional units: max_loss / risk_per_share.</span>
                 </div>
 
                 <div class="form-group">
-                  <label for="cfg-max-loss-day">Max Daily Loss Ceiling ($)</label>
-                  <input type="number" id="cfg-max-loss-day" min="10" step="10" required>
-                  <span class="form-hint">Cumulative daily loss threshold where trading stops immediately.</span>
+                  <label for="cfg-max-order-usd">Max Notional Order USD (0 = Unlimited)</label>
+                  <input type="number" id="cfg-max-order-usd" min="0" step="100" value="0">
+                  <span class="form-hint">Set 0 for uncapped notional order size per position.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-max-loss-day">Max Daily Loss Ceiling ($ / 0 = Uncapped)</label>
+                  <input type="number" id="cfg-max-loss-day" min="0" step="10" required>
+                  <span class="form-hint">Cumulative daily loss threshold; set 0 for Unlimited mode.</span>
                 </div>
 
                 <div class="form-group">
@@ -1157,16 +1323,42 @@
 
               <!-- Section 2: Strategy & Time Windows -->
               <div class="settings-section">
-                <div class="settings-section-title">⏱️ Strategy Timeframe &amp; Cutoffs</div>
+                <div class="settings-section-title">⏱️ Strategy Timeframe &amp; Global Markets</div>
 
                 <div class="form-group">
                   <label for="cfg-strategy-preset">Active Strategy Preset</label>
                   <select id="cfg-strategy-preset" onchange="activateStrategyPreset(this.value)">
+                    <option value="all_markets_24_7">🌐 All Markets 24/7 Unlimited (Global + Crypto + FX + US)</option>
                     <option value="fast_1m">⚡ 1-Minute Fast Scalp (Fast Earnings / Micro-ORB)</option>
                     <option value="forex_pip">💱 Forex &amp; Currencies 24/5 Pip Scalp (20-Pip Stop, 1.75R)</option>
                     <option value="standard_5m">📊 5-Minute Standard Day Trade (15m Range, 09:45 Open)</option>
                   </select>
                   <span class="form-hint">Switches risk rules, intervals, and order tickets.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-allow-all-markets">Market Coverage Scope</label>
+                  <select id="cfg-allow-all-markets">
+                    <option value="true">🌐 All Markets (US 5,930 Cos, Global Intl, Crypto 24/7, Forex, Futures, Indices, Options)</option>
+                    <option value="false">🇺🇸 US Stocks &amp; ETFs Only</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-fractional">Fractional Units &amp; Shares</label>
+                  <select id="cfg-fractional">
+                    <option value="true">Enabled (Supports 0.0001 BTC, FX, and fractional US shares)</option>
+                    <option value="false">Whole Shares Only</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-allow-margin">Margin / Leverage &amp; Shorting</label>
+                  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+                    <select id="cfg-allow-margin" title="Allow Margin"><option value="true">Margin: ON</option><option value="false">Margin: OFF</option></select>
+                    <select id="cfg-allow-options" title="Allow Options"><option value="true">Options: ON</option><option value="false">Options: OFF</option></select>
+                    <select id="cfg-allow-short" title="Allow Short"><option value="true">Short: ON</option><option value="false">Short: OFF</option></select>
+                  </div>
                 </div>
 
                 <div class="form-group">
@@ -1268,9 +1460,27 @@
                 </div>
 
                 <div class="form-group">
+                  <label for="cfg-ai-unlimited">Unlimited AI Orders</label>
+                  <select id="cfg-ai-unlimited">
+                    <option value="true">♾️ Unlimited AI Orders (No Daily / Cycle Cap)</option>
+                    <option value="false">Capped (Respect Daily Limits)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
                   <label for="cfg-ai-confidence">Minimum Conviction Threshold (%)</label>
-                  <input type="number" id="cfg-ai-confidence" min="50" max="95" step="5" value="80">
-                  <span class="form-hint">Min 4-factor score required for autonomous order submission.</span>
+                  <input type="number" id="cfg-ai-confidence" min="45" max="95" step="5" value="65">
+                  <span class="form-hint">Min multi-factor score required for autonomous order submission.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-ai-max-positions">AI Max Concurrent Positions (0 = Unlimited)</label>
+                  <input type="number" id="cfg-ai-max-positions" min="0" max="10000" step="1" value="0">
+                </div>
+
+                <div class="form-group">
+                  <label for="cfg-ai-max-cycle">AI Max Orders Per Cycle (0 = Unlimited)</label>
+                  <input type="number" id="cfg-ai-max-cycle" min="0" max="1000" step="1" value="0">
                 </div>
 
                 <div class="form-group">
@@ -1282,10 +1492,10 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="cfg-ai-flatten">Auto End-Of-Day Flatten</label>
+                  <label for="cfg-ai-flatten">Auto End-Of-Day Flatten (Stocks)</label>
                   <select id="cfg-ai-flatten">
-                    <option value="true">Enabled (Liquidate Prior to Close)</option>
-                    <option value="false">Disabled (Hold Overnight)</option>
+                    <option value="false">Disabled (24/7 Multi-Session Hold)</option>
+                    <option value="true">Enabled (Flatten Stocks at 15:55 ET)</option>
                   </select>
                 </div>
               </div>
@@ -1322,6 +1532,22 @@
       </div>
 
     </main>
+
+    <!-- SEC Analyst Fundamentals Modal (trader-analyst) -->
+    <div class="modal-overlay hidden" id="analyst-modal" onclick="if(event.target===this) closeAnalystModal()">
+      <div class="modal-card">
+        <div class="panel-header">
+          <div class="panel-title">
+            <h3 id="analyst-modal-title">Company Intelligence &amp; SEC EDGAR XBRL Facts</h3>
+            <p class="panel-desc" id="analyst-modal-sub">Live quote + verified SEC filing fundamentals via trader-analyst</p>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeAnalystModal()">✕ Close</button>
+        </div>
+        <div id="analyst-modal-body" class="analyst-modal-body">
+          <p class="text-muted">Loading financial intelligence...</p>
+        </div>
+      </div>
+    </div>
 
     <!-- Footer Status Bar -->
     <footer class="app-footer">

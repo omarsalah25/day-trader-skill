@@ -1,29 +1,1171 @@
-{
-  "rules": [
-    {
-      "id": "tsla-plan-stop",
-      "symbol": "TSLA",
-      "type": "stop",
-      "price": 358.32,
-      "note": "plan stop: opening-range midpoint",
-      "date": "2026-10-19"
-    },
-    {
-      "id": "tsla-plan-target",
-      "symbol": "TSLA",
-      "type": "target",
-      "price": 370.04,
-      "note": "plan target: 1R (one times the risk)",
-      "date": "2026-10-19"
-    },
-    {
-      "id": "tsla-flat-by",
-      "symbol": "TSLA",
-      "type": "time",
-      "at": "15:55",
-      "label": "flat by close",
-      "before_close": true,
-      "date": "2026-10-19"
-    }
-  ]
-}
+[
+  {
+    "id": "tsla-plan-stop",
+    "symbol": "TSLA",
+    "type": "stop",
+    "price": 358.32,
+    "note": "plan stop: opening-range midpoint",
+    "date": "2026-10-19"
+  },
+  {
+    "id": "tsla-plan-target",
+    "symbol": "TSLA",
+    "type": "target",
+    "price": 370.04,
+    "note": "plan target: 1R (one times the risk)",
+    "date": "2026-10-19",
+    "status": "TRIGGERED",
+    "triggered_at": "17:01:01"
+  },
+  {
+    "id": "tsla-flat-by",
+    "symbol": "TSLA",
+    "type": "time",
+    "at": "15:55",
+    "label": "flat by close",
+    "before_close": true,
+    "date": "2026-10-19"
+  },
+  {
+    "id": "aapl-auto-stop-1794841277",
+    "symbol": "AAPL",
+    "type": "stop",
+    "price": 353.42,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "aapl-auto-target-1794841277",
+    "symbol": "AAPL",
+    "type": "target",
+    "price": 359.12,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "adt-auto-stop-1794841281",
+    "symbol": "ADT",
+    "type": "stop",
+    "price": 9.82,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "adt-auto-target-1794841281",
+    "symbol": "ADT",
+    "type": "target",
+    "price": 9.98,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "gc=f-auto-stop-1794841281",
+    "symbol": "GC=F",
+    "type": "stop",
+    "price": 3831.75,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "gc=f-auto-target-1794841281",
+    "symbol": "GC=F",
+    "type": "target",
+    "price": 3948.45,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "gld-auto-stop-1794841282",
+    "symbol": "GLD",
+    "type": "stop",
+    "price": 352.62,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "gld-auto-target-1794841282",
+    "symbol": "GLD",
+    "type": "target",
+    "price": 358.3,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "tlt-auto-stop-1794841283",
+    "symbol": "TLT",
+    "type": "stop",
+    "price": 78.99,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "tlt-auto-target-1794841283",
+    "symbol": "TLT",
+    "type": "target",
+    "price": 80.27,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "^ftse-auto-stop-1794841283",
+    "symbol": "^FTSE",
+    "type": "stop",
+    "price": 10838.2,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "^ftse-auto-target-1794841283",
+    "symbol": "^FTSE",
+    "type": "target",
+    "price": 11057.16,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "azn.l-auto-stop-1794841283",
+    "symbol": "AZN.L",
+    "type": "stop",
+    "price": 13998.6,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "azn.l-auto-target-1794841283",
+    "symbol": "AZN.L",
+    "type": "target",
+    "price": 14281.4,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "uup-auto-stop-1794841284",
+    "symbol": "UUP",
+    "type": "stop",
+    "price": 29.29,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "uup-auto-target-1794841284",
+    "symbol": "UUP",
+    "type": "target",
+    "price": 29.77,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "nvda-auto-stop-1794841288",
+    "symbol": "NVDA",
+    "type": "stop",
+    "price": 158.46,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "nvda-auto-target-1794841288",
+    "symbol": "NVDA",
+    "type": "target",
+    "price": 161.02,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "brk.b-auto-stop-1794841289",
+    "symbol": "BRK.B",
+    "type": "stop",
+    "price": 586.97,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "brk.b-auto-target-1794841289",
+    "symbol": "BRK.B",
+    "type": "target",
+    "price": 596.43,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "ng=f-auto-stop-1794841289",
+    "symbol": "NG=F",
+    "type": "stop",
+    "price": 3.09,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "ng=f-auto-target-1794841289",
+    "symbol": "NG=F",
+    "type": "target",
+    "price": 3.19,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "usdjpy=x-auto-stop-1794841290",
+    "symbol": "USDJPY=X",
+    "type": "stop",
+    "price": 159.36,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "usdjpy=x-auto-target-1794841290",
+    "symbol": "USDJPY=X",
+    "type": "target",
+    "price": 159.91,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "btc-usd-auto-stop-1794841291",
+    "symbol": "BTC-USD",
+    "type": "stop",
+    "price": 63950.69,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "btc-usd-auto-target-1794841291",
+    "symbol": "BTC-USD",
+    "type": "target",
+    "price": 65898.43,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "meta-auto-stop-1794841292",
+    "symbol": "META",
+    "type": "stop",
+    "price": 624.27,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "TRIGGERED",
+    "auto_pos": true,
+    "triggered_at": "17:11:21"
+  },
+  {
+    "id": "meta-auto-target-1794841292",
+    "symbol": "META",
+    "type": "target",
+    "price": 634.33,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "xrp-usd-auto-stop-1794841293",
+    "symbol": "XRP-USD",
+    "type": "stop",
+    "price": 0.9452,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "xrp-usd-auto-target-1794841293",
+    "symbol": "XRP-USD",
+    "type": "target",
+    "price": 0.974,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "eth-usd-auto-stop-1794841294",
+    "symbol": "ETH-USD",
+    "type": "stop",
+    "price": 1805.1,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "eth-usd-auto-target-1794841294",
+    "symbol": "ETH-USD",
+    "type": "target",
+    "price": 1860.08,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "sol-usd-auto-stop-1794841295",
+    "symbol": "SOL-USD",
+    "type": "stop",
+    "price": 70.22,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "sol-usd-auto-target-1794841295",
+    "symbol": "SOL-USD",
+    "type": "target",
+    "price": 72.36,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "doge-usd-auto-stop-1794841296",
+    "symbol": "DOGE-USD",
+    "type": "stop",
+    "price": 0.0583,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "doge-usd-auto-target-1794841296",
+    "symbol": "DOGE-USD",
+    "type": "target",
+    "price": 0.0601,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "audusd=x-auto-stop-1794841296",
+    "symbol": "AUDUSD=X",
+    "type": "stop",
+    "price": 0.6727,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "audusd=x-auto-target-1794841296",
+    "symbol": "AUDUSD=X",
+    "type": "target",
+    "price": 0.6782,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cl=f-auto-stop-1794841296",
+    "symbol": "CL=F",
+    "type": "stop",
+    "price": 85.6,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cl=f-auto-target-1794841296",
+    "symbol": "CL=F",
+    "type": "target",
+    "price": 88.2,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "es=f-auto-stop-1794841296",
+    "symbol": "ES=F",
+    "type": "stop",
+    "price": 7413.6,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "es=f-auto-target-1794841296",
+    "symbol": "ES=F",
+    "type": "target",
+    "price": 7639.4,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "abbv-auto-stop-1794841335",
+    "symbol": "ABBV",
+    "type": "stop",
+    "price": 295.24,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "abbv-auto-target-1794841335",
+    "symbol": "ABBV",
+    "type": "target",
+    "price": 300.0,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "fxe-auto-stop-1794841338",
+    "symbol": "FXE",
+    "type": "stop",
+    "price": 100.78,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "fxe-auto-target-1794841338",
+    "symbol": "FXE",
+    "type": "target",
+    "price": 102.4,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "si=f-auto-stop-1794841338",
+    "symbol": "SI=F",
+    "type": "stop",
+    "price": 46.44,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "si=f-auto-target-1794841338",
+    "symbol": "SI=F",
+    "type": "target",
+    "price": 47.86,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "eurusd=x-auto-stop-1794841338",
+    "symbol": "EURUSD=X",
+    "type": "stop",
+    "price": 1.0992,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "eurusd=x-auto-target-1794841338",
+    "symbol": "EURUSD=X",
+    "type": "target",
+    "price": 1.1047,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "nq=f-auto-stop-1794841338",
+    "symbol": "NQ=F",
+    "type": "stop",
+    "price": 27183.78,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "nq=f-auto-target-1794841338",
+    "symbol": "NQ=F",
+    "type": "target",
+    "price": 28011.72,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "amzn-auto-stop-1794841339",
+    "symbol": "AMZN",
+    "type": "stop",
+    "price": 259.12,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "amzn-auto-target-1794841339",
+    "symbol": "AMZN",
+    "type": "target",
+    "price": 263.3,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "qqq-auto-stop-1794841340",
+    "symbol": "QQQ",
+    "type": "stop",
+    "price": 661.05,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "qqq-auto-target-1794841340",
+    "symbol": "QQQ",
+    "type": "target",
+    "price": 671.71,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "spy-auto-stop-1794841345",
+    "symbol": "SPY",
+    "type": "stop",
+    "price": 739.64,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "spy-auto-target-1794841345",
+    "symbol": "SPY",
+    "type": "target",
+    "price": 751.56,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "tsla-auto-stop-1794841346",
+    "symbol": "TSLA",
+    "type": "stop",
+    "price": 374.45,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "tsla-auto-target-1794841346",
+    "symbol": "TSLA",
+    "type": "target",
+    "price": 380.49,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "gbpusd=x-auto-stop-1794841417",
+    "symbol": "GBPUSD=X",
+    "type": "stop",
+    "price": 1.3169,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "gbpusd=x-auto-target-1794841417",
+    "symbol": "GBPUSD=X",
+    "type": "target",
+    "price": 1.3224,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "tsm-auto-stop-1794841418",
+    "symbol": "TSM",
+    "type": "stop",
+    "price": 373.25,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "tsm-auto-target-1794841418",
+    "symbol": "TSM",
+    "type": "target",
+    "price": 379.27,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "^gspc-auto-stop-1794841418",
+    "symbol": "^GSPC",
+    "type": "stop",
+    "price": 7397.77,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "^gspc-auto-target-1794841418",
+    "symbol": "^GSPC",
+    "type": "target",
+    "price": 7547.21,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "^ixic-auto-stop-1794841418",
+    "symbol": "^IXIC",
+    "type": "stop",
+    "price": 24437.64,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "^ixic-auto-target-1794841418",
+    "symbol": "^IXIC",
+    "type": "target",
+    "price": 24931.32,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "pltr-auto-stop-1794841581",
+    "symbol": "PLTR",
+    "type": "stop",
+    "price": 162.2,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "TRIGGERED",
+    "auto_pos": true,
+    "triggered_at": "17:13:10"
+  },
+  {
+    "id": "pltr-auto-target-1794841581",
+    "symbol": "PLTR",
+    "type": "target",
+    "price": 164.82,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "smh-auto-stop-1794841640",
+    "symbol": "SMH",
+    "type": "stop",
+    "price": 461.87,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "smh-auto-target-1794841640",
+    "symbol": "SMH",
+    "type": "target",
+    "price": 469.31,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "abnb-auto-stop-1794841641",
+    "symbol": "ABNB",
+    "type": "stop",
+    "price": 184.14,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "abnb-auto-target-1794841641",
+    "symbol": "ABNB",
+    "type": "target",
+    "price": 187.12,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "amd-auto-stop-1794841642",
+    "symbol": "AMD",
+    "type": "stop",
+    "price": 507.28,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "amd-auto-target-1794841642",
+    "symbol": "AMD",
+    "type": "target",
+    "price": 515.46,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "bac-auto-stop-1794841643",
+    "symbol": "BAC",
+    "type": "stop",
+    "price": 50.15,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "bac-auto-target-1794841643",
+    "symbol": "BAC",
+    "type": "target",
+    "price": 50.95,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "app-auto-stop-1794841717",
+    "symbol": "APP",
+    "type": "stop",
+    "price": 409.7,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "app-auto-target-1794841717",
+    "symbol": "APP",
+    "type": "target",
+    "price": 416.3,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "bz-auto-stop-1794841901",
+    "symbol": "BZ",
+    "type": "stop",
+    "price": 12.86,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "bz-auto-target-1794841901",
+    "symbol": "BZ",
+    "type": "target",
+    "price": 13.06,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "bhc-auto-stop-1794841909",
+    "symbol": "BHC",
+    "type": "stop",
+    "price": 8.4,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "bhc-auto-target-1794841909",
+    "symbol": "BHC",
+    "type": "target",
+    "price": 8.54,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cbrs-auto-stop-1794841959",
+    "symbol": "CBRS",
+    "type": "stop",
+    "price": 97.4,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cbrs-auto-target-1794841959",
+    "symbol": "CBRS",
+    "type": "target",
+    "price": 98.98,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cag-auto-stop-1794842023",
+    "symbol": "CAG",
+    "type": "stop",
+    "price": 15.04,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cag-auto-target-1794842023",
+    "symbol": "CAG",
+    "type": "target",
+    "price": 15.28,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cdnl-auto-stop-1794842024",
+    "symbol": "CDNL",
+    "type": "stop",
+    "price": 5.97,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cdnl-auto-target-1794842024",
+    "symbol": "CDNL",
+    "type": "target",
+    "price": 6.07,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "celh-auto-stop-1794842025",
+    "symbol": "CELH",
+    "type": "stop",
+    "price": 32.64,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "celh-auto-target-1794842025",
+    "symbol": "CELH",
+    "type": "target",
+    "price": 33.16,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cmcsa-auto-stop-1794842064",
+    "symbol": "CMCSA",
+    "type": "stop",
+    "price": 25.37,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cmcsa-auto-target-1794842064",
+    "symbol": "CMCSA",
+    "type": "target",
+    "price": 25.77,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cmg-auto-stop-1794842066",
+    "symbol": "CMG",
+    "type": "stop",
+    "price": 35.43,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cmg-auto-target-1794842066",
+    "symbol": "CMG",
+    "type": "target",
+    "price": 36.01,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cold-auto-stop-1794842067",
+    "symbol": "COLD",
+    "type": "stop",
+    "price": 16.56,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cold-auto-target-1794842067",
+    "symbol": "COLD",
+    "type": "target",
+    "price": 16.82,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cl-auto-stop-1794842069",
+    "symbol": "CL",
+    "type": "stop",
+    "price": 100.22,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cl-auto-target-1794842069",
+    "symbol": "CL",
+    "type": "target",
+    "price": 101.84,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "chym-auto-stop-1794842070",
+    "symbol": "CHYM",
+    "type": "stop",
+    "price": 33.93,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "chym-auto-target-1794842070",
+    "symbol": "CHYM",
+    "type": "target",
+    "price": 34.47,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cpb-auto-stop-1794842105",
+    "symbol": "CPB",
+    "type": "stop",
+    "price": 23.63,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cpb-auto-target-1794842105",
+    "symbol": "CPB",
+    "type": "target",
+    "price": 24.01,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cprt-auto-stop-1794842108",
+    "symbol": "CPRT",
+    "type": "stop",
+    "price": 31.85,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "cprt-auto-target-1794842108",
+    "symbol": "CPRT",
+    "type": "target",
+    "price": 32.37,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "beke-auto-stop-1794842110",
+    "symbol": "BEKE",
+    "type": "stop",
+    "price": 18.68,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "beke-auto-target-1794842110",
+    "symbol": "BEKE",
+    "type": "target",
+    "price": 18.98,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "deck-auto-stop-1794842168",
+    "symbol": "DECK",
+    "type": "stop",
+    "price": 86.13,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "deck-auto-target-1794842168",
+    "symbol": "DECK",
+    "type": "target",
+    "price": 87.51,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "ctva-auto-stop-1794842179",
+    "symbol": "CTVA",
+    "type": "stop",
+    "price": 9.13,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "ctva-auto-target-1794842179",
+    "symbol": "CTVA",
+    "type": "target",
+    "price": 9.27,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "^vix-auto-stop-1794842179",
+    "symbol": "^VIX",
+    "type": "stop",
+    "price": 21.16,
+    "note": "Auto position stop-loss",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  },
+  {
+    "id": "^vix-auto-target-1794842179",
+    "symbol": "^VIX",
+    "type": "target",
+    "price": 21.58,
+    "note": "Auto position take-profit",
+    "date": "2026-11-16",
+    "status": "ARMED",
+    "auto_pos": true
+  }
+]

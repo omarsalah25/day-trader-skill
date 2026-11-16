@@ -77,6 +77,7 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 UA = "Mozilla/5.0 (compatible; day-trader-skill/2.0; +https://github.com/Jakeschincariol/day-trader-skill)"
@@ -267,17 +268,38 @@ def yahoo_get(path):
     raise ScanError("Yahoo answered %s for %s" % (last, path.split("?")[0]))
 
 
+EXCHANGE_SUFFIXES = {
+    "T", "L", "HK", "NS", "BO", "AS", "DE", "PA", "SW", "TO", "V", "CN", "NE",
+    "AX", "KS", "KQ", "TW", "TWO", "SS", "SZ", "SI", "MI", "MC", "CO", "ST",
+    "OL", "HE", "IC", "BR", "VI", "LS", "WA", "PR", "BD", "AT", "IS", "SA",
+    "MX", "BA", "SN", "CR", "JK", "BK", "KL", "NZ", "TA", "JO", "SR", "QA",
+    "AE", "KW", "F", "BE", "DU", "HM", "MU", "SG",
+}
+
+
 def to_yahoo(sym):
-    return sym.upper().replace(".", "-")
+    s = sym.strip().upper()
+    if "." in s and not s.startswith("^"):
+        base, suf = s.rsplit(".", 1)
+        if suf in EXCHANGE_SUFFIXES or any(ch.isdigit() for ch in base):
+            return s
+        return base + "-" + suf
+    return s
+
+
+def _from_yahoo(ysym):
+    u = ysym.upper()
+    return re.sub(r"^([A-Z]{1,4})-([AB])$", r"\1.\2", u)
 
 
 def spark_path(symbols, rng, interval):
     return "/v7/finance/spark?symbols=%s&range=%s&interval=%s" % (
-        ",".join(to_yahoo(s) for s in symbols), rng, interval)
+        ",".join(urllib.parse.quote(to_yahoo(s), safe=".-=") for s in symbols), rng, interval)
 
 
 def chart_path(sym, rng, interval):
-    return "/v8/finance/chart/%s?range=%s&interval=%s" % (to_yahoo(sym), rng, interval)
+    return "/v8/finance/chart/%s?range=%s&interval=%s" % (
+        urllib.parse.quote(to_yahoo(sym), safe=".-="), rng, interval)
 
 
 # ---------------------------------------------------------------- parsing
@@ -309,7 +331,7 @@ def parse_spark(text_or_doc, wanted=None):
         if not resp:
             continue
         ysym = item.get("symbol") or (resp[0].get("meta") or {}).get("symbol") or ""
-        sym = (wanted or {}).get(ysym.upper(), ysym.upper().replace("-", "."))
+        sym = (wanted or {}).get(ysym.upper(), _from_yahoo(ysym))
         out[sym] = series_from_result(resp[0])
     if err and not out:
         raise ScanError("Yahoo spark: %s" % (err.get("description") or err.get("code") or err))
@@ -356,7 +378,7 @@ def _absorb(doc, name_hint, data, errors):
                 sym = (doc["chart"].get("result") or [{}])[0]["meta"]["symbol"]
             except (AttributeError, KeyError, TypeError, IndexError):
                 raise ScanError("an offline v8 chart without a symbol: name the file <TICKER>.json")
-        sym = sym.upper().replace("-", ".")
+        sym = _from_yahoo(sym)
         try:
             data[sym] = parse_chart(doc, sym)
         except ScanError as e:
@@ -566,7 +588,8 @@ def scan_daily(data, symbols, now_utc, min_price, min_volume):
         closes = [c for _, c in bars]
         tags, nums = find_setups(closes)
         if tags:
-            hits.append({"symbol": sym, "setups": tags, "price": round(closes[-1], 2),
+            p_dec = 6 if closes[-1] < 0.1 else (4 if closes[-1] < 2.0 else 2)
+            hits.append({"symbol": sym, "setups": tags, "price": round(closes[-1], p_dec),
                          "close_date": d_last.isoformat(), "rsi": round(nums["rsi"], 1),
                          "volume": int(vol) if vol is not None else None})
     hits.sort(key=lambda h: (-(h["price"] * (h["volume"] or 0)), h["symbol"]))  # most dollars traded first
